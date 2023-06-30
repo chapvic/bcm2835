@@ -457,7 +457,7 @@ uint8_t bcm2835_spi_transfer(uint8_t value)
 }
 
 // Writes (and reads) an number of bytes to SPI
-void bcm2835_spi_transfern(char* buf, uint32_t len)
+void bcm2835_spi_transfernb(char* tbuf, char* rbuf, uint32_t len)
 {
     volatile uint32_t* paddr = spi0 + BCM2835_SPI0_CS/4;
     volatile uint32_t* fifo = spi0 + BCM2835_SPI0_FIFO/4;
@@ -480,14 +480,14 @@ void bcm2835_spi_transfern(char* buf, uint32_t len)
 	    delayMicroseconds(10);
 
 	// Write to FIFO, no barrier
-	bcm2835_peri_write_nb(fifo, buf[i]);
+	bcm2835_peri_write_nb(fifo, tbuf[i]);
 
 	// Wait for RXD
 	while (!(bcm2835_peri_read(paddr) & BCM2835_SPI0_CS_RXD))
 	    delayMicroseconds(10);
 
 	// then read the data byte
-	buf[i] = bcm2835_peri_read_nb(fifo);
+	rbuf[i] = bcm2835_peri_read_nb(fifo);
     }
     // Wait for DONE to be set
     while (!(bcm2835_peri_read_nb(paddr) & BCM2835_SPI0_CS_DONE))
@@ -495,6 +495,13 @@ void bcm2835_spi_transfern(char* buf, uint32_t len)
 
     // Set TA = 0, and also set the barrier
     bcm2835_peri_set_bits(paddr, 0, BCM2835_SPI0_CS_TA);
+}
+
+// Writes (and reads) an number of bytes to SPI
+// Read bytes are copied over onto the transmit buffer
+void bcm2835_spi_transfern(char* buf, uint32_t len)
+{
+    bcm2835_spi_transfernb(buf, buf, len);
 }
 
 void bcm2835_spi_chipSelect(uint8_t cs)
