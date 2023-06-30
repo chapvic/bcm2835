@@ -5,7 +5,7 @@
 //
 // Author: Mike McCauley
 // Copyright (C) 2011-2013 Mike McCauley
-// $Id: bcm2835.c,v 1.14 2013/12/06 22:24:52 mikem Exp mikem $
+// $Id: bcm2835.c,v 1.16 2014/08/21 01:26:42 mikem Exp mikem $
 
 
 
@@ -1036,12 +1036,29 @@ uint8_t bcm2835_i2c_write_read_rs(char* cmds, uint32_t cmds_len, char* buf, uint
 uint64_t bcm2835_st_read(void)
 {
     volatile uint32_t* paddr;
+    uint32_t hi, lo;
     uint64_t st;
     paddr = bcm2835_st + BCM2835_ST_CHI/4;
-    st = bcm2835_peri_read(paddr);
-    st <<= 32;
+    hi = bcm2835_peri_read(paddr);
+
     paddr = bcm2835_st + BCM2835_ST_CLO/4;
-    st += bcm2835_peri_read(paddr);
+    lo = bcm2835_peri_read(paddr);
+    
+    paddr = bcm2835_st + BCM2835_ST_CHI/4;
+    st = bcm2835_peri_read(paddr);
+    
+    // Test for overflow
+    if (st == hi)
+    {
+        st <<= 32;
+        st += lo;
+    }
+    else
+    {
+        st <<= 32;
+        paddr = bcm2835_st + BCM2835_ST_CLO/4;
+        st += bcm2835_peri_read(paddr);
+    }
     return st;
 }
 

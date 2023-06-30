@@ -4,7 +4,7 @@
 //
 // Author: Mike McCauley
 // Copyright (C) 2011-2013 Mike McCauley
-// $Id: bcm2835.h,v 1.13 2013/12/06 22:24:52 mikem Exp mikem $
+// $Id: bcm2835.h,v 1.14 2014/08/21 01:26:42 mikem Exp mikem $
 //
 /// \mainpage C library for Broadcom BCM 2835 as used in Raspberry Pi
 ///
@@ -34,6 +34,7 @@
 /// You can also find online help and discussion at http://groups.google.com/group/bcm2835
 /// Please use that group for all questions and discussions on this topic. 
 /// Do not contact the author directly, unless it is to discuss commercial licensing.
+/// Before asking a question or reporting a bug, please read http://www.catb.org/esr/faqs/smart-questions.html
 ///
 /// Tested on debian6-19-04-2012, 2012-07-15-wheezy-raspbian, 2013-07-26-wheezy-raspbian
 /// and Occidentalisv01
@@ -305,6 +306,9 @@
 /// \version 1.36 Make automake's test runner detect that we're skipping tests when not root, the second
 ///               one makes us skip the test when using fakeroot (as used when building
 ///               Debian packages). Contributed by Guido Günther.
+/// \version 1.37 Moved confiure.in to configure.ac as receommnded by autoreconf.<br>
+///               Improvements to bcm2835_st_read to account for possible timer overflow, contributed by 'Ed'.<br>
+///               Added definitions for Raspberry Pi B+ J8 header GPIO pins.<br>
 ///
 /// \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 
@@ -480,8 +484,9 @@ typedef enum
 /// Not all pins on the RPi 26 bin IDE plug are connected to GPIO pins
 /// and some can adopt an alternate function.
 /// RPi version 2 has some slightly different pinouts, and these are values RPI_V2_*.
+/// RPi B+ has yet differnet pinouts and these are defined in RPI_BPLUS_*.
 /// At bootup, pins 8 and 10 are set to UART0_TXD, UART0_RXD (ie the alt0 function) respectively
-/// When SPI0 is in use (ie after bcm2835_spi_begin()), pins 19, 21, 23, 24, 26 are dedicated to SPI
+/// When SPI0 is in use (ie after bcm2835_spi_begin()), SPI0 pins are dedicated to SPI
 /// and cant be controlled independently
 typedef enum
 {
@@ -528,6 +533,33 @@ typedef enum
     RPI_V2_GPIO_P5_05     = 30,  ///< Version 2, Pin P5-05
     RPI_V2_GPIO_P5_06     = 31,  ///< Version 2, Pin P5-06
 
+    // RPi B+ J8 header
+    RPI_BPLUS_GPIO_J8_03     =  2,  ///< B+, Pin J8-03
+    RPI_BPLUS_GPIO_J8_05     =  3,  ///< B+, Pin J8-05
+    RPI_BPLUS_GPIO_J8_07     =  4,  ///< B+, Pin J8-07
+    RPI_BPLUS_GPIO_J8_08     = 14,  ///< B+, Pin J8-08, defaults to alt function 0 UART0_TXD
+    RPI_BPLUS_GPIO_J8_10     = 15,  ///< B+, Pin J8-10, defaults to alt function 0 UART0_RXD
+    RPI_BPLUS_GPIO_J8_11     = 17,  ///< B+, Pin J8-11
+    RPI_BPLUS_GPIO_J8_12     = 18,  ///< B+, Pin J8-12, can be PWM channel 0 in ALT FUN 5
+    RPI_BPLUS_GPIO_J8_13     = 27,  ///< B+, Pin J8-13
+    RPI_BPLUS_GPIO_J8_15     = 22,  ///< B+, Pin J8-15
+    RPI_BPLUS_GPIO_J8_16     = 23,  ///< B+, Pin J8-16
+    RPI_BPLUS_GPIO_J8_18     = 24,  ///< B+, Pin J8-18
+    RPI_BPLUS_GPIO_J8_19     = 10,  ///< B+, Pin J8-19, MOSI when SPI0 in use
+    RPI_BPLUS_GPIO_J8_21     =  9,  ///< B+, Pin J8-21, MISO when SPI0 in use
+    RPI_BPLUS_GPIO_J8_22     = 25,  ///< B+, Pin J8-22
+    RPI_BPLUS_GPIO_J8_23     = 11,  ///< B+, Pin J8-23, CLK when SPI0 in use
+    RPI_BPLUS_GPIO_J8_24     =  8,  ///< B+, Pin J8-24, CE0 when SPI0 in use
+    RPI_BPLUS_GPIO_J8_26     =  7,  ///< B+, Pin J8-26, CE1 when SPI0 in use
+    RPI_BPLUS_GPIO_J8_29     =  5,  ///< B+, Pin J8-29, 
+    RPI_BPLUS_GPIO_J8_31     =  6,  ///< B+, Pin J8-31, 
+    RPI_BPLUS_GPIO_J8_32     =  12, ///< B+, Pin J8-32, 
+    RPI_BPLUS_GPIO_J8_33     =  13, ///< B+, Pin J8-33, 
+    RPI_BPLUS_GPIO_J8_35     =  19, ///< B+, Pin J8-35, 
+    RPI_BPLUS_GPIO_J8_36     =  16, ///< B+, Pin J8-36, 
+    RPI_BPLUS_GPIO_J8_37     =  26, ///< B+, Pin J8-37, 
+    RPI_BPLUS_GPIO_J8_38     =  20, ///< B+, Pin J8-38, 
+    RPI_BPLUS_GPIO_J8_40     =  21, ///< B+, Pin J8-40, 
 } RPiGPIOPin;
 
 // Defines for SPI
