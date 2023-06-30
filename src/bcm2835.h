@@ -1,12 +1,10 @@
 // bcm2835.h
 //
 // C and C++ support for Broadcom BCM 2835 as used in Raspberry Pi
-// http://elinux.org/RPi_Low-level_peripherals
-// http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf
 //
 // Author: Mike McCauley (mikem@open.com.au)
-// Copyright (C) 2011 Mike McCauley
-// $Id: bcm2835.h,v 1.4 2012/07/16 23:57:59 mikem Exp mikem $
+// Copyright (C) 2011-2012 Mike McCauley
+// $Id: bcm2835.h,v 1.6 2012/11/29 01:39:33 mikem Exp mikem $
 //
 /// \mainpage C library for Broadcom BCM 2835 as used in Raspberry Pi
 ///
@@ -22,11 +20,8 @@
 /// any Linux-based distro (but clearly is no use except on Raspberry Pi or another board with 
 /// BCM 2835).
 ///
-/// The latest version of this documentation can be downloaded from 
-/// http://www.open.com.au/mikem/bcm2835
-///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.12.tar.gz
+/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.13.tar.gz
 /// You can find the latest version at http://www.open.com.au/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -53,17 +48,18 @@
 /// This library consists of a single non-shared library and header file, which will be
 /// installed in the usual places by make install
 ///
+/// \code
 /// tar zxvf bcm2835-1.0.tar.gz
 /// cd bcm2835-1.0
 /// ./configure
 /// make
-/// # as root:
-/// make check
-/// make install
+/// sudo make check
+/// sudo make install
+/// \endcode
 ///
 /// \par Physical Addresses
 ///
-/// The functions bcm2845_peri_read(), bcm2845_peri_write() and bcm2845_peri_set_bits() 
+/// The functions bcm2835_peri_read(), bcm2835_peri_write() and bcm2835_peri_set_bits() 
 /// are low level peripheral register access functions. They are designed to use
 /// physical addresses as described in section 1.2.3 ARM physical addresses
 /// of the BCM2835 ARM Peripherals manual. 
@@ -71,6 +67,14 @@
 /// addresses for peripherals are set up to map onto the peripheral bus address range starting at
 /// 0x7E000000. Thus a peripheral advertised in the manual at bus address 0x7Ennnnnn is available at
 /// physical address 0x20nnnnnn.
+///
+/// The base address of the various peripheral registers are available with the following
+/// externals:
+/// bcm2835_gpio
+/// bcm2835_pwm
+/// bcm2835_clk
+/// bcm2835_pads
+/// bcm2835_spio0
 ///
 /// \par Pin Numbering
 ///
@@ -81,7 +85,9 @@
 /// as well as power and ground pins. Not all GPIO pins on the BCM 2835 are available on the 
 /// IDE header.
 ///
-/// The functions in this librray are disgned to be passed the BCM 2835 GPIO pin number and _not_ 
+/// RPi Version 2 also has a P5 connector with 4 GPIO pins, 5V, 3.3V and Gnd.
+///
+/// The functions in this library are designed to be passed the BCM 2835 GPIO pin number and _not_ 
 /// the RPi pin number. There are symbolic definitions for each of the available pins
 /// that you should use for convenience. See \ref RPiGPIOPin.
 ///
@@ -157,6 +163,9 @@
 ///              can be disabled by defining BCM2835_NO_DELAY_COMPATIBILITY
 /// \version 1.11 Fixed incorrect link to download file
 /// \version 1.12 New GPIO pin definitions for RPi version 2 (which has a diffrent GPIO mapping)             
+/// \version 1.13 New GPIO pin definitions for RPi version 2 plug P5
+///               Hardware base pointers are now available (after initialisation) externally as bcm2835_gpio
+///               bcm2835_pwm bcm2835_clk bcm2835_pads bcm2835_spi0.
 ///
 /// \author  Mike McCauley (mikem@open.com.au)
 
@@ -178,7 +187,7 @@
 /// This means pin LOW, false, 0volts on a pin.
 #define LOW  0x0
 
-// Physical addresses for various peripheral regiser sets
+// Physical addresses for various peripheral register sets
 /// Base Physical Address of the BCM 2835 peripheral registers
 #define BCM2835_PERI_BASE               0x20000000
 /// Base Physical Address of the Pads registers
@@ -191,6 +200,27 @@
 #define BCM2835_SPI0_BASE                (BCM2835_PERI_BASE + 0x204000)
 /// Base Physical Address of the PWM registers
 #define BCM2835_GPIO_PWM                (BCM2835_PERI_BASE + 0x20C000)
+
+/// Base of the GPIO registers.
+/// Available after bcm2835_init has been called
+extern volatile uint32_t *bcm2835_gpio;
+
+/// Base of the PWM registers.
+/// Available after bcm2835_init has been called
+extern volatile uint32_t *bcm2835_pwm;
+
+/// Base of the CLK registers.
+/// Available after bcm2835_init has been called
+extern volatile uint32_t *bcm2835_clk;
+
+/// Base of the PADS registers.
+/// Available after bcm2835_init has been called
+extern volatile uint32_t *bcm2835_pads;
+
+/// Base of the SPI0 registers.
+/// Available after bcm2835_init has been called
+extern volatile uint32_t *bcm2835_spi0;
+
 
 /// Size of memory page on RPi
 #define BCM2835_PAGE_SIZE               (4*1024)
@@ -233,7 +263,7 @@
 #define BCM2835_GPPUDCLK1                    0x009c ///< GPIO Pin Pull-up/down Enable Clock 1
 
 /// \brief bcm2835PortFunction
-/// Port function select modes for bcm2845_gpio_fsel()
+/// Port function select modes for bcm2835_gpio_fsel()
 typedef enum
 {
     BCM2835_GPIO_FSEL_INPT  = 0b000,   ///< Input
@@ -248,7 +278,7 @@ typedef enum
 } bcm2835FunctionSelect;
 
 /// \brief bcm2835PUDControl
-/// Pullup/Pulldown defines for bcm2845_gpio_pud()
+/// Pullup/Pulldown defines for bcm2835_gpio_pud()
 typedef enum
 {
     BCM2835_GPIO_PUD_OFF     = 0b00,   ///< Off ? disable pull-up/down
@@ -275,7 +305,7 @@ typedef enum
 #define BCM2835_PAD_DRIVE_16mA               0x07 ///< 16mA drive current
 
 /// \brief bcm2835PadGroup
-/// Pad group specification for bcm2845_gpio_pad()
+/// Pad group specification for bcm2835_gpio_pad()
 typedef enum
 {
     BCM2835_PAD_GROUP_GPIO_0_27         = 0, ///< Pad group for GPIO pads 0 to 27
@@ -283,7 +313,8 @@ typedef enum
     BCM2835_PAD_GROUP_GPIO_46_53        = 2  ///< Pad group for GPIO pads 46 to 53
 } bcm2835PadGroup;
 
-/// \brief RPiGPIOPin
+/// \brief GPIO Pin Numbers
+///
 /// Here we define Raspberry Pin GPIO pins on P1 in terms of the underlying BCM GPIO pin numbers.
 /// These can be passed as a pin number to any function requiring a pin.
 /// Not all pins on the RPi 26 bin IDE plug are connected to GPIO pins
@@ -329,12 +360,19 @@ typedef enum
     RPI_V2_GPIO_P1_22     = 25,  ///< Version 2, Pin P1-22
     RPI_V2_GPIO_P1_23     = 11,  ///< Version 2, Pin P1-23, CLK when SPI0 in use
     RPI_V2_GPIO_P1_24     =  8,  ///< Version 2, Pin P1-24, CE0 when SPI0 in use
-    RPI_V2_GPIO_P1_26     =  7   ///< Version 2, Pin P1-26, CE1 when SPI0 in use
+    RPI_V2_GPIO_P1_26     =  7,  ///< Version 2, Pin P1-26, CE1 when SPI0 in use
+
+    // RPi Version 2, new plug P5
+    RPI_V2_GPIO_P5_03     = 28,  ///< Version 2, Pin P5-03
+    RPI_V2_GPIO_P5_04     = 29,  ///< Version 2, Pin P5-04
+    RPI_V2_GPIO_P5_05     = 30,  ///< Version 2, Pin P5-05
+    RPI_V2_GPIO_P5_06     = 31,  ///< Version 2, Pin P5-06
+
 } RPiGPIOPin;
 
-/// Defines for SPI
-/// GPIO register offsets from BCM2835_SPI0_BASE. 
-/// Offsets into the SPI Peripheral block in bytes per 10.5 SPI Register Map
+// Defines for SPI
+// GPIO register offsets from BCM2835_SPI0_BASE. 
+// Offsets into the SPI Peripheral block in bytes per 10.5 SPI Register Map
 #define BCM2835_SPI0_CS                      0x0000 ///< SPI Master Control and Status
 #define BCM2835_SPI0_FIFO                    0x0004 ///< SPI Master TX and RX FIFOs
 #define BCM2835_SPI0_CLK                     0x0008 ///< SPI Master Clock Divider
@@ -370,16 +408,16 @@ typedef enum
 #define BCM2835_SPI0_CS_CPHA                 0x00000004 ///< Clock Phase
 #define BCM2835_SPI0_CS_CS                   0x00000003 ///< Chip Select
 
-/// \brief bcm2835SPIBitOrder
-/// Specifies the SPI data bit ordering
+/// \brief bcm2835SPIBitOrder SPI Bit order
+/// Specifies the SPI data bit ordering for bcm2835_spi_setBitOrder()
 typedef enum
 {
     BCM2835_SPI_BIT_ORDER_LSBFIRST = 0,  ///< LSB First
     BCM2835_SPI_BIT_ORDER_MSBFIRST = 1   ///< MSB First
 }bcm2835SPIBitOrder;
 
-/// \brief bcm2835SPIMode
-/// Specify the SPI data mode
+/// \brief SPI Data mode
+/// Specify the SPI data mode to be passed to bcm2835_spi_setDataMode()
 typedef enum
 {
     BCM2835_SPI_MODE0 = 0,  ///< CPOL = 0, CPHA = 0
@@ -417,7 +455,7 @@ typedef enum
     BCM2835_SPI_CLOCK_DIVIDER_32    = 32,      ///< 32 = 125ns = 8MHz
     BCM2835_SPI_CLOCK_DIVIDER_16    = 16,      ///< 16 = 50ns = 20MHz
     BCM2835_SPI_CLOCK_DIVIDER_8     = 8,       ///< 8 = 25ns = 40MHz
-    BCM2835_SPI_CLOCK_DIVIDER_4     = 4,       ///< 4 = 12.5ns 80MHz
+    BCM2835_SPI_CLOCK_DIVIDER_4     = 4,       ///< 4 = 12.5ns = 80MHz
     BCM2835_SPI_CLOCK_DIVIDER_2     = 2,       ///< 2 = 6.25ns = 160MHz
     BCM2835_SPI_CLOCK_DIVIDER_1     = 1,       ///< 0 = 256us = 4kHz
 } bcm2835SPIClockDivider;

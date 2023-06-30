@@ -4,7 +4,7 @@
 //
 // Author: Mike McCauley (mikem@open.com.au)
 // Copyright (C) 2011 Mike McCauley
-// $Id: test.c,v 1.2 2012/06/26 01:40:50 mikem Exp $
+// $Id: test.c,v 1.3 2012/11/29 01:39:33 mikem Exp mikem $
 
 #include <bcm2835.h>
 #include <stdio.h>
