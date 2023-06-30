@@ -4,7 +4,7 @@
   
    Author: Mike McCauley
    Copyright (C) 2011-2013 Mike McCauley
-   $Id: bcm2835.h,v 1.20 2015/03/31 04:55:41 mikem Exp mikem $
+   $Id: bcm2835.h,v 1.21 2017/02/05 02:08:07 mikem Exp mikem $
 */
 
 /*! \mainpage C library for Broadcom BCM 2835 as used in Raspberry Pi
@@ -23,7 +23,7 @@
   BCM 2835).
   
   The version of the package that this documentation refers to can be downloaded 
-  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.50.tar.gz
+  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.52.tar.gz
   You can find the latest version at http://www.airspayce.com/mikem/bcm2835
   
   Several example programs are provided.
@@ -35,7 +35,10 @@
   You can also find online help and discussion at http://groups.google.com/group/bcm2835
   Please use that group for all questions and discussions on this topic. 
   Do not contact the author directly, unless it is to discuss commercial licensing.
-  Before asking a question or reporting a bug, please read http://www.catb.org/esr/faqs/smart-questions.html
+  Before asking a question or reporting a bug, please read 
+  - http://en.wikipedia.org/wiki/Wikipedia:Reference_desk/How_to_ask_a_software_question
+  - http://www.catb.org/esr/faqs/smart-questions.html
+  - http://www.chiark.greenend.org.uk/~shgtatham/bugs.html
   
   Tested on debian6-19-04-2012, 2012-07-15-wheezy-raspbian, 2013-07-26-wheezy-raspbian
   and Occidentalisv01, 2016-02-09 Raspbian Jessie.
@@ -271,8 +274,15 @@
   the right to share who uses it. If you wish to use this software under Open
   Source Licensing, you must contribute all your source code to the open source
   community in accordance with the GPL Version 2 when your application is
-  distributed. See http://www.gnu.org/copyleft/gpl.html and COPYING
+  distributed. See https://www.gnu.org/licenses/gpl-2.0.html and COPYING
   
+ \par Commercial Licensing
+
+ This is the appropriate option if you are creating proprietary applications
+ and you are not prepared to distribute and share the source code of your
+ application. Purchase commercial licenses at http://airspayce.binpress.com
+
+
   \par Acknowledgements
   
   Some of this code has been inspired by Dom and Gert.
@@ -455,8 +465,11 @@
   Testing on Raspbian Jessie.
 
   \version 1.51 2016-11-03
-  Added documentation about SPI cock divider and resulting SPI speeds on RPi3.
+  Added documentation about SPI clock divider and resulting SPI speeds on RPi3.
   Fixed a problem where seg fault could occur in bcm2835_delayMicroseconds() if not running as root. Patch from Pok.
+
+  \version 1.52 2017-02-03
+  Added link to commercial license purchasing.
 
   \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 */
@@ -468,7 +481,7 @@
 
 #include <stdint.h>
 
-#define BCM2835_VERSION 10050 /* Version 1.50 */
+#define BCM2835_VERSION 10052 /* Version 1.52 */
 
 /* RPi 2 is ARM v7, and has DMB instruction for memory barriers.
    Older RPis are ARM v6 and don't, so a coprocessor instruction must be used instead.
