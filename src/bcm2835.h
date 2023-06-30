@@ -4,7 +4,7 @@
   
    Author: Mike McCauley
    Copyright (C) 2011-2013 Mike McCauley
-   $Id: bcm2835.h,v 1.18 2015/03/08 22:17:20 mikem Exp $
+   $Id: bcm2835.h,v 1.19 2015/03/28 05:27:32 mikem Exp mikem $
 */
 
 /*! \mainpage C library for Broadcom BCM 2835 as used in Raspberry Pi
@@ -371,6 +371,10 @@
   Reinstated some necessary volatile declarations as requested by tlhackque.<br>
 
   \version 1.42 Further improvements to memory barriers with the patient assistance and patches of tlhackque.<br>
+
+  \version 1.43 Fixed problems with compiling barriers on RPI 2 with Arch Linux and gcc 4.9.2. 
+  Reported and patched by Lars Christensen.<br>
+  Testing on RPI 2, with ArchLinuxARM-rpi-2-latest and 2015-02-16-raspbian-wheezy.<br>
 
   \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 */
