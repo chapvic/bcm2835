@@ -12,7 +12,7 @@
 // gcc -o blink -I ../../src ../../src/bcm2835.c blink.c
 // sudo ./blink
 //
-// Author: Mike McCauley (mikem@open.com.au)
+// Author: Mike McCauley
 // Copyright (C) 2011 Mike McCauley
 // $Id: RF22.h,v 1.21 2012/05/30 01:51:25 mikem Exp $
 

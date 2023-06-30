@@ -3,8 +3,8 @@
 // as root on Raspberry Pi hardware, but it will compile and run with little effect
 // on other hardware
 //
-// Author: Mike McCauley (mikem@open.com.au)
-// Copyright (C) 2011 Mike McCauley
+// Author: Mike McCauley
+// Copyright (C) 2011-2013 Mike McCauley
 // $Id: test.c,v 1.3 2012/11/29 01:39:33 mikem Exp $
 
 #include <bcm2835.h>

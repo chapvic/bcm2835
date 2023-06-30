@@ -2,8 +2,8 @@
 //
 // C and C++ support for Broadcom BCM 2835 as used in Raspberry Pi
 //
-// Author: Mike McCauley (mikem@airspayce.com)
-// Copyright (C) 2011-2012 Mike McCauley
+// Author: Mike McCauley
+// Copyright (C) 2011-2013 Mike McCauley
 // $Id: bcm2835.h,v 1.8 2013/02/15 22:06:09 mikem Exp mikem $
 //
 /// \mainpage C library for Broadcom BCM 2835 as used in Raspberry Pi
@@ -22,7 +22,7 @@
 /// BCM 2835).
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.20.tar.gz
+/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.21.tar.gz
 /// You can find the latest version at http://www.open.com.au/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -50,8 +50,9 @@
 /// installed in the usual places by make install
 ///
 /// \code
-/// tar zxvf bcm2835-1.0.tar.gz
-/// cd bcm2835-1.0
+/// # download the latest version of the library, say bcm2835-1.xx.tar.gz, then:
+/// tar zxvf bcm2835-1.xx.tar.gz
+/// cd bcm2835-1.xx
 /// ./configure
 /// make
 /// sudo make check
@@ -215,8 +216,9 @@
 ///               No need to link with -lrt now. Contributed by Arjan van Vught.
 /// \version 1.19 Removed inlines added by previous patch since they don't seem to work everywhere. 
 ///               Reported by olly.
-/// \version 1.20 Patch from Mark Dootson to close/dev/mem after access to the peripherals has been granted.
-///
+/// \version 1.20 Patch from Mark Dootson to close /dev/mem after access to the peripherals has been granted.
+/// \version 1.21 delayMicroseconds is now not susceptible to 32 bit timer overruns. 
+///               Patch courtesy Jeremy Mortis.
 /// \author  Mike McCauley (mikem@airspayce.com)
 
 
@@ -598,8 +600,12 @@ typedef enum
 // BCM2835_ST_CLO is the System Timer Counter Lower bits register.
 // The system timer free-running counter lower register is a read-only register that returns the current value
 // of the lower 32-bits of the free running counter.
+// BCM2835_ST_CHI is the System Timer Counter Upper bits register.
+// The system timer free-running counter upper register is a read-only register that returns the current value
+// of the upper 32-bits of the free running counter.
 #define BCM2835_ST_CS 							0x0000 ///< System Timer Control/Status
 #define BCM2835_ST_CLO 							0x0004 ///< System Timer Counter Lower 32 bits
+#define BCM2835_ST_CHI 							0x0008 ///< System Timer Counter Upper 32 bits
 
 /// @}
 
@@ -893,7 +899,7 @@ extern "C" {
     /// It is reported that a delay of 0 microseconds on RaspberryPi will in fact
     /// result in a delay of about 80 microseconds. Your mileage may vary.
     /// \param[in] micros Delay in microseconds
-    extern void bcm2835_delayMicroseconds (uint32_t micros);
+    extern void bcm2835_delayMicroseconds (uint64_t micros);
 
     /// Sets the output state of the specified pin
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
@@ -1058,14 +1064,14 @@ extern "C" {
     /// Allows access to and delays using the System Timer Counter.
     /// @{
 
-    /// Read the System Timer Counter Lower 32 bits register.
+    /// Read the System Timer Counter register.
     /// \return the value read from the System Timer Counter Lower 32 bits register
-    uint32_t bcm2835_st_read(void);
+    uint64_t bcm2835_st_read(void);
 
     /// Delays for the specified number of microseconds with offset.
     /// \param[in] offset_micros Offset in microseconds
     /// \param[in] micros Delay in microseconds
-    extern void bcm2835_st_delay(uint32_t offset_micros, uint32_t micros);
+    extern void bcm2835_st_delay(uint64_t offset_micros, uint64_t micros);
 
     /// @} 
 

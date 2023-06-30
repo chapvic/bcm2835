@@ -3,8 +3,8 @@
 // http://elinux.org/RPi_Low-level_peripherals
 // http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf
 //
-// Author: Mike McCauley (mikem@airspayce.com)
-// Copyright (C) 2011 Mike McCauley
+// Author: Mike McCauley
+// Copyright (C) 2011-2013 Mike McCauley
 // $Id: bcm2835.c,v 1.8 2013/02/15 22:06:09 mikem Exp mikem $
 
 #include <stdlib.h>
@@ -351,10 +351,10 @@ void bcm2835_delay(unsigned int millis)
 }
 
 // microseconds
-void bcm2835_delayMicroseconds(uint32_t micros)
+void bcm2835_delayMicroseconds(uint64_t micros)
 {
     struct timespec t1;
-    uint32_t        start;
+    uint64_t        start;
 	
     // Calling nanosleep() takes at least 100-200 us, so use it for
     // long waits and use a busy wait on the System Timer for the rest.
@@ -772,22 +772,25 @@ uint8_t bcm2835_i2c_read(char* buf, uint32_t len)
     return reason;
 }
 
-// Read the System Timer Counter Lower 32 bits
-uint32_t bcm2835_st_read(void)
+// Read the System Timer Counter (64-bits)
+uint64_t bcm2835_st_read(void)
 {
-    uint32_t st;
-    volatile uint32_t* paddr = bcm2835_st + BCM2835_ST_CLO/4;
+    volatile uint32_t* paddr;
+    uint64_t st;
+    paddr = bcm2835_st + BCM2835_ST_CHI/4;
     st = bcm2835_peri_read(paddr);
+    st <<= 32;
+    paddr = bcm2835_st + BCM2835_ST_CLO/4;
+    st += bcm2835_peri_read(paddr);
     return st;
 }
 
 // Delays for the specified number of microseconds with offset
-void bcm2835_st_delay(uint32_t offset_micros, uint32_t micros)
+void bcm2835_st_delay(uint64_t offset_micros, uint64_t micros)
 {
-    volatile uint32_t* paddr = bcm2835_st + BCM2835_ST_CLO/4;
-    uint32_t compare = offset_micros + micros;
+    uint64_t compare = offset_micros + micros;
 
-    while(bcm2835_peri_read(paddr) < compare)
+    while(bcm2835_st_read() < compare)
 	;
 }
 
