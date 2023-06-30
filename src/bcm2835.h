@@ -22,7 +22,7 @@
 /// BCM 2835).
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.34.tar.gz
+/// from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.35.tar.gz
 /// You can find the latest version at http://www.airspayce.com/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -301,6 +301,7 @@
 /// \version 1.33 Added command line utilities i2c and gpio to examples. Contributed by Shahrooz Shahparnia.
 /// \version 1.34 Added bcm2835_i2c_write_read_rs() which writes an arbitrary number of bytes, 
 ///               sends a repeat start, and reads from the device. Contributed by Eduardo Steinhorst.
+/// \version 1.35 Fix build errors when compiled under Qt. Also performance improvements with SPI transfers. Contributed by Udo Klaas.
 ///
 /// \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 

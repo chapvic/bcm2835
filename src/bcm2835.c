@@ -7,6 +7,8 @@
 // Copyright (C) 2011-2013 Mike McCauley
 // $Id: bcm2835.c,v 1.14 2013/12/06 22:24:52 mikem Exp mikem $
 
+
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
@@ -15,6 +17,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+
 
 #include "bcm2835.h"
 
@@ -30,14 +33,14 @@
 // #define I2C_V1
 
 // Pointers to the hardware register bases
-volatile uint32_t *bcm2835_gpio = MAP_FAILED;
-volatile uint32_t *bcm2835_pwm  = MAP_FAILED;
-volatile uint32_t *bcm2835_clk  = MAP_FAILED;
-volatile uint32_t *bcm2835_pads = MAP_FAILED;
-volatile uint32_t *bcm2835_spi0 = MAP_FAILED;
-volatile uint32_t *bcm2835_bsc0 = MAP_FAILED;
-volatile uint32_t *bcm2835_bsc1 = MAP_FAILED;
-volatile uint32_t *bcm2835_st	= MAP_FAILED;
+volatile uint32_t *bcm2835_gpio = (volatile uint32_t *)MAP_FAILED;
+volatile uint32_t *bcm2835_pwm  = (volatile uint32_t *)MAP_FAILED;
+volatile uint32_t *bcm2835_clk  = (volatile uint32_t *)MAP_FAILED;
+volatile uint32_t *bcm2835_pads = (volatile uint32_t *)MAP_FAILED;
+volatile uint32_t *bcm2835_spi0 = (volatile uint32_t *)MAP_FAILED;
+volatile uint32_t *bcm2835_bsc0 = (volatile uint32_t *)MAP_FAILED;
+volatile uint32_t *bcm2835_bsc1 = (volatile uint32_t *)MAP_FAILED;
+volatile uint32_t *bcm2835_st	= (volatile uint32_t *)MAP_FAILED;
 
 
 // This variable allows us to test on hardware other than RPi.
@@ -520,6 +523,8 @@ void bcm2835_spi_transfernb(char* tbuf, char* rbuf, uint32_t len)
 {
     volatile uint32_t* paddr = bcm2835_spi0 + BCM2835_SPI0_CS/4;
     volatile uint32_t* fifo = bcm2835_spi0 + BCM2835_SPI0_FIFO/4;
+    uint32_t TXCnt=0;
+    uint32_t RXCnt=0;
 
     // This is Polled transfer as per section 10.6.1
     // BUG ALERT: what happens if we get interupted in this section, and someone else
@@ -531,22 +536,21 @@ void bcm2835_spi_transfernb(char* tbuf, char* rbuf, uint32_t len)
     // Set TA = 1
     bcm2835_peri_set_bits(paddr, BCM2835_SPI0_CS_TA, BCM2835_SPI0_CS_TA);
 
-    uint32_t i;
-    for (i = 0; i < len; i++)
+    // Use the FIFO's to reduce the interbyte times
+    while((TXCnt < len)||(RXCnt < len))
     {
-	// Maybe wait for TXD
-	while (!(bcm2835_peri_read(paddr) & BCM2835_SPI0_CS_TXD))
-	    ;
-
-	// Write to FIFO, no barrier
-	bcm2835_peri_write_nb(fifo, tbuf[i]);
-
-	// Wait for RXD
-	while (!(bcm2835_peri_read(paddr) & BCM2835_SPI0_CS_RXD))
-	    ;
-
-	// then read the data byte
-	rbuf[i] = bcm2835_peri_read_nb(fifo);
+        // TX fifo not full, so add some more bytes
+        while(((bcm2835_peri_read(paddr) & BCM2835_SPI0_CS_TXD))&&(TXCnt < len ))
+        {
+           bcm2835_peri_write_nb(fifo, tbuf[TXCnt]);
+           TXCnt++;
+        }
+        //Rx fifo not empty, so get the next received bytes
+        while(((bcm2835_peri_read(paddr) & BCM2835_SPI0_CS_RXD))&&( RXCnt < len ))
+        {
+           rbuf[RXCnt] = bcm2835_peri_read_nb(fifo);
+           RXCnt++;
+        }
     }
     // Wait for DONE to be set
     while (!(bcm2835_peri_read_nb(paddr) & BCM2835_SPI0_CS_DONE))
@@ -1168,32 +1172,32 @@ int bcm2835_init(void)
     }
 	
     // GPIO:
-    bcm2835_gpio = mapmem("gpio", BCM2835_BLOCK_SIZE, memfd, BCM2835_GPIO_BASE);
+    bcm2835_gpio = (volatile uint32_t *)mapmem("gpio", BCM2835_BLOCK_SIZE, memfd, BCM2835_GPIO_BASE);
     if (bcm2835_gpio == MAP_FAILED) goto exit;
 
     // PWM
-    bcm2835_pwm = mapmem("pwm", BCM2835_BLOCK_SIZE, memfd, BCM2835_GPIO_PWM);
+    bcm2835_pwm = (volatile uint32_t *)mapmem("pwm", BCM2835_BLOCK_SIZE, memfd, BCM2835_GPIO_PWM);
     if (bcm2835_pwm == MAP_FAILED) goto exit;
 
     // Clock control (needed for PWM)
-    bcm2835_clk = mapmem("clk", BCM2835_BLOCK_SIZE, memfd, BCM2835_CLOCK_BASE);
+    bcm2835_clk = (volatile uint32_t *)mapmem("clk", BCM2835_BLOCK_SIZE, memfd, BCM2835_CLOCK_BASE);
     if (bcm2835_clk == MAP_FAILED) goto exit;
     
-    bcm2835_pads = mapmem("pads", BCM2835_BLOCK_SIZE, memfd, BCM2835_GPIO_PADS);
+    bcm2835_pads = (volatile uint32_t *)mapmem("pads", BCM2835_BLOCK_SIZE, memfd, BCM2835_GPIO_PADS);
     if (bcm2835_pads == MAP_FAILED) goto exit;
     
-    bcm2835_spi0 = mapmem("spi0", BCM2835_BLOCK_SIZE, memfd, BCM2835_SPI0_BASE);
+    bcm2835_spi0 = (volatile uint32_t *)mapmem("spi0", BCM2835_BLOCK_SIZE, memfd, BCM2835_SPI0_BASE);
     if (bcm2835_spi0 == MAP_FAILED) goto exit;
 
     // I2C
-    bcm2835_bsc0 = mapmem("bsc0", BCM2835_BLOCK_SIZE, memfd, BCM2835_BSC0_BASE);
+    bcm2835_bsc0 = (volatile uint32_t *)mapmem("bsc0", BCM2835_BLOCK_SIZE, memfd, BCM2835_BSC0_BASE);
     if (bcm2835_bsc0 == MAP_FAILED) goto exit;
 
-    bcm2835_bsc1 = mapmem("bsc1", BCM2835_BLOCK_SIZE, memfd, BCM2835_BSC1_BASE);
+    bcm2835_bsc1 = (volatile uint32_t *)mapmem("bsc1", BCM2835_BLOCK_SIZE, memfd, BCM2835_BSC1_BASE);
     if (bcm2835_bsc1 == MAP_FAILED) goto exit;
 
     // ST
-    bcm2835_st = mapmem("st", BCM2835_BLOCK_SIZE, memfd, BCM2835_ST_BASE);
+    bcm2835_st = (volatile uint32_t *)mapmem("st", BCM2835_BLOCK_SIZE, memfd, BCM2835_ST_BASE);
     if (bcm2835_st == MAP_FAILED) goto exit;
 
     ok = 1;
@@ -1300,3 +1304,6 @@ int main(int argc, char **argv)
     return 0;
 }
 #endif
+
+
+
