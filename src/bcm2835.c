@@ -35,17 +35,17 @@ static uint8_t debug = 0;
 // Low level register access functions
 //
 
-void  bcm2845_set_debug(uint8_t d)
+void  bcm2835_set_debug(uint8_t d)
 {
     debug = d;
 }
 
 // safe read from peripheral
-uint32_t bcm2845_peri_read(volatile uint32_t* paddr)
+uint32_t bcm2835_peri_read(volatile uint32_t* paddr)
 {
     if (debug)
     {
-	printf("bcm2845_peri_read  paddr %08X\n", paddr);
+	printf("bcm2835_peri_read  paddr %08X\n", paddr);
 	return 0;
     }
     else
@@ -57,11 +57,11 @@ uint32_t bcm2845_peri_read(volatile uint32_t* paddr)
 }
 
 // safe write to peripheral
-void bcm2845_peri_write(volatile uint32_t* paddr, uint32_t value)
+void bcm2835_peri_write(volatile uint32_t* paddr, uint32_t value)
 {
     if (debug)
     {
-	printf("bcm2845_peri_write paddr %08X, value %08X\n", paddr, value);
+	printf("bcm2835_peri_write paddr %08X, value %08X\n", paddr, value);
     }
     else
     {
@@ -71,11 +71,11 @@ void bcm2845_peri_write(volatile uint32_t* paddr, uint32_t value)
 }
 
 // Set only the bits covered by the mask
-void bcm2845_peri_set_bits(volatile uint32_t* paddr, uint32_t value, uint32_t mask)
+void bcm2835_peri_set_bits(volatile uint32_t* paddr, uint32_t value, uint32_t mask)
 {
-    uint32_t v = bcm2845_peri_read(paddr);
+    uint32_t v = bcm2835_peri_read(paddr);
     v = (v & ~mask) | (value & mask);
-    bcm2845_peri_write(paddr, v);
+    bcm2835_peri_write(paddr, v);
 }
 
 //
@@ -83,7 +83,7 @@ void bcm2845_peri_set_bits(volatile uint32_t* paddr, uint32_t value, uint32_t ma
 //
 
 // Function select
-// pin is a BCM2845 GPIO pin number NOT RPi pin number
+// pin is a BCM2835 GPIO pin number NOT RPi pin number
 //      There are 6 control registers, each control the functions of a block
 //      of 10 pins.
 //      Each control register has 10 sets of 3 bits per GPIO pin:
@@ -99,138 +99,138 @@ void bcm2845_peri_set_bits(volatile uint32_t* paddr, uint32_t value, uint32_t ma
 //
 // So the 3 bits for port X are:
 //      X / 10 + ((X % 10) * 3)
-void bcm2845_gpio_fsel(uint8_t pin, uint8_t mode)
+void bcm2835_gpio_fsel(uint8_t pin, uint8_t mode)
 {
     // Function selects are 10 pins per 32 bit word, 3 bits per pin
     volatile uint32_t* paddr = gpio + BCM2835_GPFSEL0/4 + (pin/10);
     uint8_t   shift = (pin % 10) * 3;
     uint32_t  mask = BCM2835_GPIO_FSEL_MASK << shift;
     uint32_t  value = mode << shift;
-    bcm2845_peri_set_bits(paddr, value, mask);
+    bcm2835_peri_set_bits(paddr, value, mask);
 }
 
 // Set putput pin
-void bcm2845_gpio_set(uint8_t pin)
+void bcm2835_gpio_set(uint8_t pin)
 {
     volatile uint32_t* paddr = gpio + BCM2835_GPSET0/4 + pin/32;
     uint8_t shift = pin % 32;
-    bcm2845_peri_write(paddr, 1 << shift);
+    bcm2835_peri_write(paddr, 1 << shift);
 }
 
 // Clear output pin
-void bcm2845_gpio_clr(uint8_t pin)
+void bcm2835_gpio_clr(uint8_t pin)
 {
     volatile uint32_t* paddr = gpio + BCM2835_GPCLR0/4 + pin/32;
     uint8_t shift = pin % 32;
-    bcm2845_peri_write(paddr, 1 << shift);
+    bcm2835_peri_write(paddr, 1 << shift);
 }
 
 // Read input pin
-uint8_t bcm2845_gpio_lev(uint8_t pin)
+uint8_t bcm2835_gpio_lev(uint8_t pin)
 {
     volatile uint32_t* paddr = gpio + BCM2835_GPLEV0/4 + pin/32;
     uint8_t shift = pin % 32;
-    uint32_t value = bcm2845_peri_read(paddr);
+    uint32_t value = bcm2835_peri_read(paddr);
     return (value & (1 << shift)) ? HIGH : LOW;
 }
 
 // See if an event detection bit is set
 // Sigh cant support interrupts yet
-uint8_t bcm2845_gpio_eds(uint8_t pin)
+uint8_t bcm2835_gpio_eds(uint8_t pin)
 {
     volatile uint32_t* paddr = gpio + BCM2835_GPEDS0/4 + pin/32;
     uint8_t shift = pin % 32;
-    uint32_t value = bcm2845_peri_read(paddr);
+    uint32_t value = bcm2835_peri_read(paddr);
     return (value & (1 << shift)) ? HIGH : LOW;
 }
 
 // Write a 1 to clear the bit in EDS
-void bcm2845_gpio_set_eds(uint8_t pin)
+void bcm2835_gpio_set_eds(uint8_t pin)
 {
     volatile uint32_t* paddr = gpio + BCM2835_GPEDS0/4 + pin/32;
     uint8_t shift = pin % 32;
     uint32_t value = 1 << shift;
-    bcm2845_peri_write(paddr, value);
+    bcm2835_peri_write(paddr, value);
 }
 
 // Rising edge detect enable
-void bcm2845_gpio_ren(uint8_t pin)
+void bcm2835_gpio_ren(uint8_t pin)
 {
     volatile uint32_t* paddr = gpio + BCM2835_GPREN0/4 + pin/32;
     uint8_t shift = pin % 32;
-    bcm2845_peri_write(paddr, 1 << shift);
+    bcm2835_peri_write(paddr, 1 << shift);
 }
 
 // Falling edge detect enable
-void bcm2845_gpio_fen(uint8_t pin)
+void bcm2835_gpio_fen(uint8_t pin)
 {
     volatile uint32_t* paddr = gpio + BCM2835_GPFEN0/4 + pin/32;
     uint8_t shift = pin % 32;
-    bcm2845_peri_write(paddr, 1 << shift);
+    bcm2835_peri_write(paddr, 1 << shift);
 }
 
 // High detect enable
-void bcm2845_gpio_hen(uint8_t pin)
+void bcm2835_gpio_hen(uint8_t pin)
 {
     volatile uint32_t* paddr = gpio + BCM2835_GPHEN0/4 + pin/32;
     uint8_t shift = pin % 32;
-    bcm2845_peri_write(paddr, 1 << shift);
+    bcm2835_peri_write(paddr, 1 << shift);
 }
 
 // Low detect enable
-void bcm2845_gpio_len(uint8_t pin)
+void bcm2835_gpio_len(uint8_t pin)
 {
     volatile uint32_t* paddr = gpio + BCM2835_GPLEN0/4 + pin/32;
     uint8_t shift = pin % 32;
-    bcm2845_peri_write(paddr, 1 << shift);
+    bcm2835_peri_write(paddr, 1 << shift);
 }
 
 // Async rising edge detect enable
-void bcm2845_gpio_aren(uint8_t pin)
+void bcm2835_gpio_aren(uint8_t pin)
 {
     volatile uint32_t* paddr = gpio + BCM2835_GPAREN0/4 + pin/32;
     uint8_t shift = pin % 32;
-    bcm2845_peri_write(paddr, 1 << shift);
+    bcm2835_peri_write(paddr, 1 << shift);
 }
 
 // Async falling edge detect enable
-void bcm2845_gpio_afen(uint8_t pin)
+void bcm2835_gpio_afen(uint8_t pin)
 {
     volatile uint32_t* paddr = gpio + BCM2835_GPAFEN0/4 + pin/32;
     uint8_t shift = pin % 32;
-    bcm2845_peri_write(paddr, 1 << shift);
+    bcm2835_peri_write(paddr, 1 << shift);
 }
 
 // Set pullup/down
-void bcm2845_gpio_pud(uint8_t pud)
+void bcm2835_gpio_pud(uint8_t pud)
 {
     volatile uint32_t* paddr = gpio + BCM2835_GPPUD/4;
-    bcm2845_peri_write(paddr, pud);
+    bcm2835_peri_write(paddr, pud);
 }
 
 // Pullup/down clock
 // Clocks the value of pud into the GPIO pin
-void bcm2845_gpio_pudclk(uint8_t pin, uint8_t on)
+void bcm2835_gpio_pudclk(uint8_t pin, uint8_t on)
 {
     volatile uint32_t* paddr = gpio + BCM2835_GPPUDCLK0/4 + pin/32;
     uint8_t shift = pin % 32;
-    bcm2845_peri_write(paddr, (on ? 1 : 0) << shift);
+    bcm2835_peri_write(paddr, (on ? 1 : 0) << shift);
 }
 
 // Read GPIO pad behaviour for groups of GPIOs
-uint32_t bcm2845_gpio_pad(uint8_t group)
+uint32_t bcm2835_gpio_pad(uint8_t group)
 {
     volatile uint32_t* paddr = pads + BCM2835_PADS_GPIO_0_27/4 + group*2;
-    return bcm2845_peri_read(paddr);
+    return bcm2835_peri_read(paddr);
 }
 
 // Set GPIO pad behaviour for groups of GPIOs
 // powerup value for al pads is
 // BCM2835_PAD_SLEW_RATE_UNLIMITED | BCM2835_PAD_HYSTERESIS_ENABLED | BCM2835_PAD_DRIVE_8mA
-void bcm2845_gpio_set_pad(uint8_t group, uint32_t control)
+void bcm2835_gpio_set_pad(uint8_t group, uint32_t control)
 {
     volatile uint32_t* paddr = pads + BCM2835_PADS_GPIO_0_27/4 + group*2;
-    bcm2845_peri_write(paddr, control);
+    bcm2835_peri_write(paddr, control);
 }
 
 // Some convenient arduino like functions
@@ -259,12 +259,12 @@ void delayMicroseconds (unsigned int micros)
 //
 
 // Set the state of an output
-void bcm2845_gpio_write(uint8_t pin, uint8_t on)
+void bcm2835_gpio_write(uint8_t pin, uint8_t on)
 {
     if (on)
-	bcm2845_gpio_set(pin);
+	bcm2835_gpio_set(pin);
     else
-	bcm2845_gpio_clr(pin);
+	bcm2835_gpio_clr(pin);
 }
 
 // Set the pullup/down resistor for a pin
@@ -284,14 +284,14 @@ void bcm2845_gpio_write(uint8_t pin, uint8_t on)
 // 6. Write to GPPUDCLK0/1 to remove the clock
 //
 // RPi has P1-03 and P1-05 with 1k8 pullup resistor
-void bcm2845_gpio_set_pud(uint8_t pin, uint8_t pud)
+void bcm2835_gpio_set_pud(uint8_t pin, uint8_t pud)
 {
-    bcm2845_gpio_pud(pud);
+    bcm2835_gpio_pud(pud);
     delayMicroseconds(10);
-    bcm2845_gpio_pudclk(pin, 1);
+    bcm2835_gpio_pudclk(pin, 1);
     delayMicroseconds(10);
-    bcm2845_gpio_pud(BCM2835_GPIO_PUD_OFF);
-    bcm2845_gpio_pudclk(pin, 0);
+    bcm2835_gpio_pud(BCM2835_GPIO_PUD_OFF);
+    bcm2835_gpio_pudclk(pin, 0);
 }
 
 // Initialise this library
@@ -400,35 +400,35 @@ int bcm2835_init()
 int main(int argc, char **argv)
 {
     // Be non-destructive
-    bcm2845_set_debug(1);
+    bcm2835_set_debug(1);
 
     if (!bcm2835_init())
 	return 1;
 
     // Configure some GPIO pins fo some testing
     // Set RPI pin P1-11 to be an output
-    bcm2845_gpio_fsel(RPI_GPIO_P1_11, BCM2835_GPIO_FSEL_OUTP);
+    bcm2835_gpio_fsel(RPI_GPIO_P1_11, BCM2835_GPIO_FSEL_OUTP);
     // Set RPI pin P1-15 to be an input
-    bcm2845_gpio_fsel(RPI_GPIO_P1_15, BCM2835_GPIO_FSEL_INPT);
+    bcm2835_gpio_fsel(RPI_GPIO_P1_15, BCM2835_GPIO_FSEL_INPT);
     //  with a pullup
-    bcm2845_gpio_set_pud(RPI_GPIO_P1_15, BCM2835_GPIO_PUD_UP);
+    bcm2835_gpio_set_pud(RPI_GPIO_P1_15, BCM2835_GPIO_PUD_UP);
     // And a low detect enable
-    bcm2845_gpio_len(RPI_GPIO_P1_15);
+    bcm2835_gpio_len(RPI_GPIO_P1_15);
     // and input hysteresis disabled on GPIOs 0 to 27
-    bcm2845_gpio_set_pad(BCM2835_PAD_GROUP_GPIO_0_27, BCM2835_PAD_SLEW_RATE_UNLIMITED|BCM2835_PAD_DRIVE_8mA);
+    bcm2835_gpio_set_pad(BCM2835_PAD_GROUP_GPIO_0_27, BCM2835_PAD_SLEW_RATE_UNLIMITED|BCM2835_PAD_DRIVE_8mA);
 
 #if 1
     // Blink
     while (1)
     {
 	// Turn it on
-	bcm2845_gpio_write(RPI_GPIO_P1_11, HIGH);
+	bcm2835_gpio_write(RPI_GPIO_P1_11, HIGH);
 	
 	// wait a bit
 	delay(500);
 	
 	// turn it off
-	bcm2845_gpio_write(RPI_GPIO_P1_11, LOW);
+	bcm2835_gpio_write(RPI_GPIO_P1_11, LOW);
 	
 	// wait a bit
 	delay(500);
@@ -440,7 +440,7 @@ int main(int argc, char **argv)
     while (1)
     {
 	// Read some data
-	uint8_t value = bcm2845_gpio_lev(RPI_GPIO_P1_15);
+	uint8_t value = bcm2835_gpio_lev(RPI_GPIO_P1_15);
 	printf("read from pin 15: %d\n", value);
 	
 	// wait a bit
@@ -453,10 +453,10 @@ int main(int argc, char **argv)
     // eds will be set whenever pin 15 goes low
     while (1)
     {
-	if (bcm2845_gpio_eds(RPI_GPIO_P1_15))
+	if (bcm2835_gpio_eds(RPI_GPIO_P1_15))
 	{
 	    // Now clear the eds flag by setting it to 1
-	    bcm2845_gpio_set_eds(RPI_GPIO_P1_15);
+	    bcm2835_gpio_set_eds(RPI_GPIO_P1_15);
 	    printf("low event detect for pin 15\n");
 	}
 

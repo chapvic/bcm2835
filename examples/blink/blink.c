@@ -5,12 +5,12 @@
 //
 // After installing bcm2835, you can build this 
 // with something like:
-// gcc -l bcm2835 -o blink blink.c
-// ./blink
+// gcc -o blink blink.c -l bcm2835
+// sudo ./blink
 //
 // Or you can test it before installing with:
 // gcc -o blink -I ../../src ../../src/bcm2835.c blink.c
-// ./blink
+// sudo ./blink
 //
 // Author: Mike McCauley (mikem@open.com.au)
 // Copyright (C) 2011 Mike McCauley
@@ -25,25 +25,25 @@ int main(int argc, char **argv)
 {
     // If you call this, it will not actually access the GPIO
     // Use for testing
-//    bcm2845_set_debug(1);
+//    bcm2835_set_debug(1);
 
     if (!bcm2835_init())
 	return 1;
 
     // Set the pin to be an output
-    bcm2845_gpio_fsel(PIN, BCM2835_GPIO_FSEL_OUTP);
+    bcm2835_gpio_fsel(PIN, BCM2835_GPIO_FSEL_OUTP);
 
     // Blink
     while (1)
     {
 	// Turn it on
-	bcm2845_gpio_write(PIN, HIGH);
+	bcm2835_gpio_write(PIN, HIGH);
 	
 	// wait a bit
 	delay(500);
 	
 	// turn it off
-	bcm2845_gpio_write(PIN, LOW);
+	bcm2835_gpio_write(PIN, LOW);
 	
 	// wait a bit
 	delay(500);

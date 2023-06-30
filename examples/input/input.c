@@ -5,12 +5,12 @@
 //
 // After installing bcm2835, you can build this 
 // with something like:
-// gcc -l bcm2835 -o input input.c
-// ./input
+// gcc -o input input.c -l bcm2835
+// sudo ./input
 //
 // Or you can test it before installing with:
 // gcc -o input -I ../../src ../../src/bcm2835.c input.c
-// ./input
+// sudo ./input
 //
 // Author: Mike McCauley (mikem@open.com.au)
 // Copyright (C) 2011 Mike McCauley
@@ -26,21 +26,21 @@ int main(int argc, char **argv)
 {
     // If you call this, it will not actually access the GPIO
     // Use for testing
-    bcm2845_set_debug(1);
+//    bcm2835_set_debug(1);
 
     if (!bcm2835_init())
 	return 1;
 
     // Set RPI pin P1-15 to be an input
-    bcm2845_gpio_fsel(PIN, BCM2835_GPIO_FSEL_INPT);
+    bcm2835_gpio_fsel(PIN, BCM2835_GPIO_FSEL_INPT);
     //  with a pullup
-    bcm2845_gpio_set_pud(PIN, BCM2835_GPIO_PUD_UP);
+    bcm2835_gpio_set_pud(PIN, BCM2835_GPIO_PUD_UP);
 
     // Blink
     while (1)
     {
 	// Read some data
-	uint8_t value = bcm2845_gpio_lev(PIN);
+	uint8_t value = bcm2835_gpio_lev(PIN);
 	printf("read from pin 15: %d\n", value);
 	
 	// wait a bit

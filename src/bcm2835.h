@@ -11,9 +11,9 @@
 /// \mainpage C library for Broadcom BCM 2835 as used in Raspberry Pi
 ///
 /// This is a C library for Raspberry Pi (RPi). It provides access to 
-/// GPIO and other IO functions on the Broadcom BCM 2835 chip.
-/// allowing access to the 
-/// 26 pin ISE plug on the RPi board so you can control and interface with various external devices.
+/// GPIO and other IO functions on the Broadcom BCM 2835 chip,
+/// allowing access to the GPIO pins on the
+/// 26 pin IDE plug on the RPi board so you can control and interface with various external devices.
 ///
 /// It provides functions for reading digital inputs and setting digital outputs.
 /// Pin event detection is supported by polling (interrupts not supported).
@@ -21,6 +21,13 @@
 /// It is C++ compatible, and installs as a header file and non-shared library on 
 /// any Linux-based distro (but clearly is no use except on Raspberry Pi or another board with 
 /// BCM 2835).
+///
+/// The latest version of this documentation can be downloaded from 
+/// http://www.open.com.au/mikem/bcm2835
+///
+/// The version of the package that this documentation refers to can be downloaded 
+/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.1.tar.gz
+/// You can find the latest version at http://www.open.com.au/mikem/bcm2835
 ///
 /// Several example programs are provided.
 ///
@@ -71,14 +78,8 @@
 /// the right to share who uses it. If you wish to use this software under Open
 /// Source Licensing, you must contribute all your source code to the open source
 /// community in accordance with the GPL Version 2 when your application is
-/// distributed. See http://www.gnu.org/copyleft/gpl.html
+/// distributed. See http://www.gnu.org/copyleft/gpl.html and COPYING
 /// 
-/// \par Commercial Licensing
-///
-/// This is the appropriate option if you are creating proprietary applications
-/// and you are not prepared to distribute and share the source code of your
-/// application. Contact info@open.com.au for details.
-///
 /// \par Revision History
 ///
 /// \version 1.0 Initial release
@@ -272,7 +273,7 @@ extern "C" {
     /// Initialise the library by opening /dev/mem and getting pointers to the 
     /// internal memory for BCM 2835 device registers. You must call this (successfully)
     /// before calling any other 
-    /// functions in this library (except bcm2845_set_debug). 
+    /// functions in this library (except bcm2835_set_debug). 
     /// If bcm2835_init() fails by returning 0, 
     /// calling any other function may result in crashes or other failures.
     /// Prints messages to stderr in case of errors.
@@ -285,7 +286,7 @@ extern "C" {
     /// A value of 0, the default, causes nomal operation.
     /// Call this before calling bcm2835_init();
     /// \param[in] debug The new debug level. 1 means debug
-    extern void  bcm2845_set_debug(uint8_t debug);
+    extern void  bcm2835_set_debug(uint8_t debug);
 
     /// @} // end of init
 
@@ -298,7 +299,7 @@ extern "C" {
     /// \param[in] paddr Physical address to read from. See BCM2835_GPIO_BASE etc.
     /// \return the value read from the 32 bit register
     /// \sa Physical Addresses
-    extern uint32_t bcm2845_peri_read(volatile uint32_t* paddr);
+    extern uint32_t bcm2835_peri_read(volatile uint32_t* paddr);
 
 
     /// Writes 32 bit value from a peripheral address
@@ -307,7 +308,7 @@ extern "C" {
     /// \param[in] paddr Physical address to read from. See BCM2835_GPIO_BASE etc.
     /// \param[in] value The 32 bit value to write
     /// \sa Physical Addresses
-    extern void bcm2845_peri_write(volatile uint32_t* paddr, uint32_t value);
+    extern void bcm2835_peri_write(volatile uint32_t* paddr, uint32_t value);
 
     /// Alters a number of bits in a 32 peripheral regsiter.
     /// It reads the current valu and then alters the bits deines as 1 in mask, 
@@ -320,7 +321,7 @@ extern "C" {
     /// \param[in] value The 32 bit value to write, masked in by mask.
     /// \param[in] mask Bitmask that defines the bits that will be altered in the register.
     /// \sa Physical Addresses
-    extern void bcm2845_peri_set_bits(volatile uint32_t* paddr, uint32_t value, uint32_t mask);
+    extern void bcm2835_peri_set_bits(volatile uint32_t* paddr, uint32_t value, uint32_t mask);
     /// @} // end of lowlevel
 
     /// \defgroup gpio GPIO register access
@@ -330,41 +331,41 @@ extern "C" {
     /// the pin as Input, Output or one of the 6 alternate functions.
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from RPiGPIOPin.
     /// \param[in] mode Mode to set the pin to, one of BCM2835_GPIO_FSEL_* from \ref bcm2835FunctionSelect
-    extern void bcm2845_gpio_fsel(uint8_t pin, uint8_t mode);
+    extern void bcm2835_gpio_fsel(uint8_t pin, uint8_t mode);
 
     /// Sets the specified pin output to 
     /// HIGH.
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
-    /// \sa bcm2845_gpio_write()
-    extern void bcm2845_gpio_set(uint8_t pin);
+    /// \sa bcm2835_gpio_write()
+    extern void bcm2835_gpio_set(uint8_t pin);
 
     /// Sets the specified pin output to 
     /// LOW.
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
-    /// \sa bcm2845_gpio_write()
-    extern void bcm2845_gpio_clr(uint8_t pin);
+    /// \sa bcm2835_gpio_write()
+    extern void bcm2835_gpio_clr(uint8_t pin);
 
     /// Reads the current level on the specified 
     /// pin and returns either HIGH or LOW. Works whether or not the pin
     /// is an input or an output.
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
     /// \return the current level  either HIGH or LOW
-    extern uint8_t bcm2845_gpio_lev(uint8_t pin);
+    extern uint8_t bcm2835_gpio_lev(uint8_t pin);
 
     /// Event Detect Status.
     /// Tests whether the specified pin has detected a level or edge
-    /// as requested by bcm2845_gpio_ren(), bcm2845_gpio_fen(), bcm2845_gpio_hen(), 
-    /// bcm2845_gpio_len(), bcm2845_gpio_aren(), bcm2845_gpio_afen().
-    /// Clear the flag for a given pin by calling bcm2845_gpio_set_eds(pin);
+    /// as requested by bcm2835_gpio_ren(), bcm2835_gpio_fen(), bcm2835_gpio_hen(), 
+    /// bcm2835_gpio_len(), bcm2835_gpio_aren(), bcm2835_gpio_afen().
+    /// Clear the flag for a given pin by calling bcm2835_gpio_set_eds(pin);
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
     /// \return HIGH if the event detect status for th given pin is true.
-    extern uint8_t bcm2845_gpio_eds(uint8_t pin);
+    extern uint8_t bcm2835_gpio_eds(uint8_t pin);
 
     /// Sets the Event Detect Status register for a given pin to 1, 
     /// which has the effect of clearing the flag. Use this afer seeing
     /// an Event Detect Status on the pin.
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
-    extern void bcm2845_gpio_set_eds(uint8_t pin);
+    extern void bcm2835_gpio_set_eds(uint8_t pin);
 
     /// Enable Rising Edge Detect Enable for the specified pin.
     /// When a rising edge is detected, sets the appropriate pin in Event Detect Status.
@@ -373,7 +374,7 @@ extern "C" {
     /// system clock and then it is looking for a “011” pattern on the sampled signal. This
     /// has the effect of suppressing glitches.
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
-    extern void bcm2845_gpio_ren(uint8_t pin);
+    extern void bcm2835_gpio_ren(uint8_t pin);
 
     /// Enable Falling Edge Detect Enable for the specified pin.
     /// When a falling edge is detected, sets the appropriate pin in Event Detect Status.
@@ -382,55 +383,55 @@ extern "C" {
     /// system clock and then it is looking for a “100” pattern on the sampled signal. This
     /// has the effect of suppressing glitches.
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
-    extern void bcm2845_gpio_fen(uint8_t pin);
+    extern void bcm2835_gpio_fen(uint8_t pin);
 
     /// Enable High Detect Enable for the specified pin.
     /// When a HIGH level is detected on the pin, sets the appropriate pin in Event Detect Status.
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
-    extern void bcm2845_gpio_hen(uint8_t pin);
+    extern void bcm2835_gpio_hen(uint8_t pin);
 
     /// Enable Low Detect Enable for the specified pin.
     /// When a LOW level is detected on the pin, sets the appropriate pin in Event Detect Status.
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
-    extern void bcm2845_gpio_len(uint8_t pin);
+    extern void bcm2835_gpio_len(uint8_t pin);
 
     /// Enable Asynchronous Rising Edge Detect Enable for the specified pin.
     /// When a rising edge is detected, sets the appropriate pin in Event Detect Status.
     /// Asynchronous means the incoming signal is not sampled by the system clock. As such
     /// rising edges of very short duration can be detected.
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
-    extern void bcm2845_gpio_aren(uint8_t pin);
+    extern void bcm2835_gpio_aren(uint8_t pin);
 
     /// Enable Asynchronous Falling Edge Detect Enable for the specified pin.
     /// When a falling edge is detected, sets the appropriate pin in Event Detect Status.
     /// Asynchronous means the incoming signal is not sampled by the system clock. As such
     /// falling edges of very short duration can be detected.
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
-    extern void bcm2845_gpio_afen(uint8_t pin);
+    extern void bcm2835_gpio_afen(uint8_t pin);
 
     /// Sets the Pull-up/down register for the given pin. This is
-    /// used with bcm2845_gpio_pudclk() to set the  Pull-up/down resistor for the given pin.
-    /// However, it is usually more convenient to use bcm2845_gpio_set_pud().
+    /// used with bcm2835_gpio_pudclk() to set the  Pull-up/down resistor for the given pin.
+    /// However, it is usually more convenient to use bcm2835_gpio_set_pud().
     /// \param[in] pud The desired Pull-up/down mode. One of BCM2835_GPIO_PUD_* from bcm2835PUDControl
-    /// \sa bcm2845_gpio_set_pud()
-    extern void bcm2845_gpio_pud(uint8_t pud);
+    /// \sa bcm2835_gpio_set_pud()
+    extern void bcm2835_gpio_pud(uint8_t pud);
 
-    /// Clocks the Pull-up/down value set earlier by bcm2845_gpio_pud() into the pin.
+    /// Clocks the Pull-up/down value set earlier by bcm2835_gpio_pud() into the pin.
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
-    /// \param[in] on HIGH to clock the value from bcm2845_gpio_pud() into the pin. 
+    /// \param[in] on HIGH to clock the value from bcm2835_gpio_pud() into the pin. 
     /// LOW to remove the clock. 
-    /// \sa bcm2845_gpio_set_pud()
-    extern void bcm2845_gpio_pudclk(uint8_t pin, uint8_t on);
+    /// \sa bcm2835_gpio_set_pud()
+    extern void bcm2835_gpio_pudclk(uint8_t pin, uint8_t on);
 
     /// Reads and returns the Pad Control for the given GPIO group.
     /// \param[in] group The GPIO pad group number, one of BCM2835_PAD_GROUP_GPIO_*
     /// \return Mask of bits from BCM2835_PAD_* from \ref bcm2835PadGroup
-    extern uint32_t bcm2845_gpio_pad(uint8_t group);
+    extern uint32_t bcm2835_gpio_pad(uint8_t group);
 
     /// Sets the Pad Control for the given GPIO group.
     /// \param[in] group The GPIO pad group number, one of BCM2835_PAD_GROUP_GPIO_*
     /// \param[in] control Mask of bits from BCM2835_PAD_* from \ref bcm2835PadGroup
-    extern void bcm2845_gpio_set_pad(uint8_t group, uint32_t control);
+    extern void bcm2835_gpio_set_pad(uint8_t group, uint32_t control);
 
     /// Delays for the specified number of milliseconds.
     /// Uses nanosleep(), and therefore does not use CPU until the time is up.
@@ -445,13 +446,13 @@ extern "C" {
     /// Sets the output state of the specified pin
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
     /// \param[in] on HIGH sets the output to HIGH and LOW to LOW.
-    extern void bcm2845_gpio_write(uint8_t pin, uint8_t on);
+    extern void bcm2835_gpio_write(uint8_t pin, uint8_t on);
 
     /// Sets the Pull-up/down mode for the specified pin. This is more convenient than
-    /// clocking the mode in with bcm2845_gpio_pud() and bcm2845_gpio_pudclk().
+    /// clocking the mode in with bcm2835_gpio_pud() and bcm2835_gpio_pudclk().
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
     /// \param[in] pud The desired Pull-up/down mode. One of BCM2835_GPIO_PUD_* from bcm2835PUDControl
-    extern void bcm2845_gpio_set_pud(uint8_t pin, uint8_t pud);
+    extern void bcm2835_gpio_set_pud(uint8_t pin, uint8_t pud);
 
     /// @} 
 #ifdef __cplusplus

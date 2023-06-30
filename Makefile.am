@@ -5,3 +5,7 @@ EXTRA_DIST = examples/blink/blink.c \
 examples/input/input.c \
 examples/event/event.c 
 
+upload:
+	rsync -avz @PACKAGE_TARNAME@-@VERSION@.tar.gz doc/html/ server2:/var/www/html/mikem/@PACKAGE_NAME@
+
+
