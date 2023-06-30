@@ -4,7 +4,7 @@
   
    Author: Mike McCauley
    Copyright (C) 2011-2013 Mike McCauley
-   $Id: bcm2835.h,v 1.21 2017/02/05 02:08:07 mikem Exp mikem $
+   $Id: bcm2835.h,v 1.22 2018/01/16 04:46:01 mikem Exp mikem $
 */
 
 /*! \mainpage C library for Broadcom BCM 2835 as used in Raspberry Pi
@@ -109,6 +109,8 @@
   bcm2835_st
   bcm2835_bsc0
   bcm2835_bsc1
+  bcm2835_aux
+  bcm2835_spi1
 
   \par Raspberry Pi 2 (RPI2)
 
@@ -163,12 +165,22 @@
   - P1-24 (CE0) 
   - P1-26 (CE1)
 
-  Although it is possible to select high speeds for the SPI interface, up to 125MHz (see bcm2835_spi_setClockDivider()) 
-  you should not expect to actually achieve those sorts of speeds with the RPi wiring. Our tests on RPi 2 show that the 
-  SPI CLK line when unloaded has a resonant frequency of about 40MHz, and when loaded, the MOSI and MISO lines 
+  Although it is possible to select high speeds for the SPI interface, up to 125MHz (see bcm2835_spi_setClockDivider())
+  you should not expect to actually achieve those sorts of speeds with the RPi wiring. Our tests on RPi 2 show that the
+  SPI CLK line when unloaded has a resonant frequency of about 40MHz, and when loaded, the MOSI and MISO lines
   ring at an even lower frequency. Measurements show that SPI waveforms are very poor and unusable at 62 and 125MHz.
   Dont expect any speed faster than 31MHz to work reliably.
-  
+
+  The bcm2835_aux_spi_* functions allow you to control the BCM 2835 SPI1 interface,
+  allowing you to send and received data by SPI (Serial Peripheral Interface).
+
+  The Raspberry Pi GPIO pins used for AUX SPI (SPI1) are:
+
+  - P1-38 (MOSI)
+  - P1-35 (MISO)
+  - P1-40 (CLK)
+  - P1-36 (CE2)
+
   \par I2C Pins
   
   The bcm2835_i2c_* functions allow you to control the BCM 2835 BSC interface,
@@ -224,8 +236,8 @@
   clock divider to be 16, and the RANGE to 1024. The pulse repetition frequency will be
   1.2MHz/1024 = 1171.875Hz.
   
-  \par SPI
-
+  \par Interactions with other systems
+ 
   In order for bcm2835 library SPI to work, you may need to disable the SPI kernel module using:
 
   \code
@@ -233,6 +245,20 @@
    under Advanced Options - enable Device Tree
    under Advanced Options - disable SPI
    Reboot.
+  \endcode
+
+  Since bcm2835 accesses the lowest level hardware interfaces (in eh intererests of speed and flexibility)
+  there can be intercations with other low level software trying to do similar things.
+
+  It seems that with "latest" 8.0 Jessie 4.9.24-v7+ kernel PWM just won't 
+  work unless you disable audio. There's a line
+  \code
+  dtparam=audio=on
+  \endcode
+  in the /boot/config.txt. 
+  Comment it out like this:
+  \code
+  #dtparam=audio=on
   \endcode
 
   \par Real Time performance constraints
@@ -249,6 +275,9 @@
   Arjan reports that you can prevent swapping on Linux with the following code fragment:
   
   \code
+  #define <sched.h>
+  #define <sys/mman.h>
+
   struct sched_param sp;
   memset(&sp, 0, sizeof(sp));
   sp.sched_priority = sched_get_priority_max(SCHED_FIFO);
@@ -276,12 +305,11 @@
   community in accordance with the GPL Version 2 when your application is
   distributed. See https://www.gnu.org/licenses/gpl-2.0.html and COPYING
   
- \par Commercial Licensing
+  \par Commercial Licensing
 
  This is the appropriate option if you are creating proprietary applications
  and you are not prepared to distribute and share the source code of your
  application. Purchase commercial licenses at http://airspayce.binpress.com
-
 
   \par Acknowledgements
   
@@ -446,7 +474,7 @@
   and bcm2835_gpio_pad() working correctly with non-0 pad groups. Reported by Guido.
 
   \version 1.46 2015-09-18
-           Added symbolic definitions for remaining pins on 40 pin GPIO header on RPi 2. <br>
+  Added symbolic definitions for remaining pins on 40 pin GPIO header on RPi 2. <br>
 
   \version 1.47 2015-11-18
   Fixed possibly incorrect reads in bcm2835_i2c_read_register_rs, patch from Eckhardt Ulrich.<br>
@@ -470,6 +498,10 @@
 
   \version 1.52 2017-02-03
   Added link to commercial license purchasing.
+
+  \version 1.53 2018-01-14
+  Added support for AUX SPI (SPI1)
+  Contributed by Arjan van Vught (http://www.raspberrypi-dmx.org/)
 
   \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 */
@@ -526,7 +558,7 @@
 /*! Offsets for the bases of various peripherals within the peripherals block
   /   Base Address of the System Timer registers
 */
-#define BCM2835_ST_BASE			0x3000
+#define BCM2835_ST_BASE					0x3000
 /*! Base Address of the Pads registers */
 #define BCM2835_GPIO_PADS               0x100000
 /*! Base Address of the Clock/timer registers */
@@ -536,11 +568,18 @@
 /*! Base Address of the SPI0 registers */
 #define BCM2835_SPI0_BASE               0x204000
 /*! Base Address of the BSC0 registers */
-#define BCM2835_BSC0_BASE 		0x205000
+#define BCM2835_BSC0_BASE 				0x205000
 /*! Base Address of the PWM registers */
 #define BCM2835_GPIO_PWM                0x20C000
+/*! Base Address of the AUX registers */
+#define BCM2835_AUX_BASE				0x215000
+/*! Base Address of the AUX_SPI1 registers */
+#define BCM2835_SPI1_BASE				0x215080
+/*! Base Address of the AUX_SPI2 registers */
+#define BCM2835_SPI2_BASE				0x2150C0
 /*! Base Address of the BSC1 registers */
-#define BCM2835_BSC1_BASE		0x804000
+#define BCM2835_BSC1_BASE				0x804000
+
 
 /*! Physical address and size of the peripherals block
   May be overridden on RPi2
@@ -592,6 +631,17 @@ extern volatile uint32_t *bcm2835_bsc0;
 */
 extern volatile uint32_t *bcm2835_bsc1;
 
+/*! Base of the AUX registers.
+  Available after bcm2835_init has been called (as root)
+*/
+extern volatile uint32_t *bcm2835_aux;
+
+/*! Base of the SPI1 registers.
+  Available after bcm2835_init has been called (as root)
+*/
+extern volatile uint32_t *bcm2835_spi1;
+
+
 /*! \brief bcm2835RegisterBase
   Register bases for bcm2835_regbase()
 */
@@ -604,7 +654,9 @@ typedef enum
     BCM2835_REGBASE_PADS = 5, /*!< Base of the PADS registers. */
     BCM2835_REGBASE_SPI0 = 6, /*!< Base of the SPI0 registers. */
     BCM2835_REGBASE_BSC0 = 7, /*!< Base of the BSC0 registers. */
-    BCM2835_REGBASE_BSC1 = 8  /*!< Base of the BSC1 registers. */
+    BCM2835_REGBASE_BSC1 = 8,  /*!< Base of the BSC1 registers. */
+	BCM2835_REGBASE_AUX  = 9,  /*!< Base of the AUX registers. */
+	BCM2835_REGBASE_SPI1 = 10  /*!< Base of the SPI1 registers. */
 } bcm2835RegisterBase;
 
 /*! Size of memory page on RPi */
@@ -800,6 +852,62 @@ typedef enum
     RPI_BPLUS_GPIO_J8_38     = 20,  /*!< B+, Pin J8-38,  */
     RPI_BPLUS_GPIO_J8_40     = 21   /*!< B+, Pin J8-40,  */
 } RPiGPIOPin;
+
+/* Defines for AUX
+  GPIO register offsets from BCM2835_AUX_BASE.
+*/
+#define BCM2835_AUX_IRQ			0x0000
+#define BCM2835_AUX_ENABLE		0x0004
+
+#define BCM2835_AUX_ENABLE_UART1	0x01
+#define BCM2835_AUX_ENABLE_SPI0		0x02	/*!< SPI0 (SPI1 in the device) */
+#define BCM2835_AUX_ENABLE_SPI1		0x04	/*!< SPI1 (SPI2 in the device) */
+
+
+#define BCM2835_AUX_SPI_CNTL0		0x0000
+#define BCM2835_AUX_SPI_CNTL1 		0x0004
+#define BCM2835_AUX_SPI_STAT 		0x0008
+#define BCM2835_AUX_SPI_PEEK		0x000C  /*!< Read but do not take from FF */
+#define BCM2835_AUX_SPI_IO			0x0020  /*!< Write = TX, read=RX */
+#define BCM2835_AUX_SPI_TXHOLD		0x0030  /*!< Write = TX keep CS, read=RX */
+
+#define BCM2835_AUX_SPI_CLOCK_MIN	30500		/*!< 30,5kHz */
+#define BCM2835_AUX_SPI_CLOCK_MAX	125000000 	/*!< 125Mhz */
+
+#define BCM2835_AUX_SPI_CNTL0_SPEED		0xFFF00000
+	#define BCM2835_AUX_SPI_CNTL0_SPEED_MAX		0xFFF
+	#define BCM2835_AUX_SPI_CNTL0_SPEED_SHIFT	20
+
+#define BCM2835_AUX_SPI_CNTL0_CS0_N     0x000C0000 /*!< CS 0 low */
+#define BCM2835_AUX_SPI_CNTL0_CS1_N     0x000A0000 /*!< CS 1 low */
+#define BCM2835_AUX_SPI_CNTL0_CS2_N 	0x00060000 /*!< CS 2 low */
+
+#define BCM2835_AUX_SPI_CNTL0_POSTINPUT	0x00010000
+#define BCM2835_AUX_SPI_CNTL0_VAR_CS	0x00008000
+#define BCM2835_AUX_SPI_CNTL0_VAR_WIDTH	0x00004000
+#define BCM2835_AUX_SPI_CNTL0_DOUTHOLD	0x00003000
+#define BCM2835_AUX_SPI_CNTL0_ENABLE	0x00000800
+#define BCM2835_AUX_SPI_CNTL0_CPHA_IN	0x00000400
+#define BCM2835_AUX_SPI_CNTL0_CLEARFIFO	0x00000200
+#define BCM2835_AUX_SPI_CNTL0_CPHA_OUT	0x00000100
+#define BCM2835_AUX_SPI_CNTL0_CPOL		0x00000080
+#define BCM2835_AUX_SPI_CNTL0_MSBF_OUT	0x00000040
+#define BCM2835_AUX_SPI_CNTL0_SHIFTLEN	0x0000003F
+
+#define BCM2835_AUX_SPI_CNTL1_CSHIGH	0x00000700
+#define BCM2835_AUX_SPI_CNTL1_IDLE		0x00000080
+#define BCM2835_AUX_SPI_CNTL1_TXEMPTY	0x00000040
+#define BCM2835_AUX_SPI_CNTL1_MSBF_IN	0x00000002
+#define BCM2835_AUX_SPI_CNTL1_KEEP_IN	0x00000001
+
+#define BCM2835_AUX_SPI_STAT_TX_LVL		0xFF000000
+#define BCM2835_AUX_SPI_STAT_RX_LVL		0x00FF0000
+#define BCM2835_AUX_SPI_STAT_TX_FULL	0x00000400
+#define BCM2835_AUX_SPI_STAT_TX_EMPTY	0x00000200
+#define BCM2835_AUX_SPI_STAT_RX_FULL	0x00000100
+#define BCM2835_AUX_SPI_STAT_RX_EMPTY	0x00000080
+#define BCM2835_AUX_SPI_STAT_BUSY		0x00000040
+#define BCM2835_AUX_SPI_STAT_BITCOUNT	0x0000003F
 
 /* Defines for SPI
    GPIO register offsets from BCM2835_SPI0_BASE. 
@@ -1512,9 +1620,79 @@ extern "C" {
       Asserts the currently selected CS pins (as previously set by bcm2835_spi_chipSelect)
       during the transfer.
       \param[in] buf Buffer of bytes to send.
+      \param[in] len Number of bytes in the buf buffer, and the number of bytes to send
+    */
+    extern void bcm2835_spi_writenb(const char* buf, uint32_t len);
+
+    /*! Transfers half-word to and from the currently selected SPI slave.
+      Asserts the currently selected CS pins (as previously set by bcm2835_spi_chipSelect)
+      during the transfer.
+      Clocks the 8 bit value out on MOSI, and simultaneously clocks in data from MISO.
+      Returns the read data byte from the slave.
+      Uses polled transfer as per section 10.6.1 of the BCM 2835 ARM Peripherls manual
+      \param[in] value The 8 bit data byte to write to MOSI
+      \sa bcm2835_spi_writenb()
+    */
+    extern void bcm2835_spi_write(uint16_t data);
+
+    /*! Start AUX SPI operations.
+      Forces RPi AUX SPI pins P1-36 (MOSI), P1-38 (MISO), P1-40 (CLK) and P1-36 (CE2)
+      to alternate function ALT4, which enables those pins for SPI interface.
+      \return 1 if successful, 0 otherwise (perhaps because you are not running as root)
+    */
+    extern int bcm2835_aux_spi_begin(void);
+
+    /*! End AUX SPI operations.
+       SPI1 pins P1-36 (MOSI), P1-38 (MISO), P1-40 (CLK) and P1-36 (CE2)
+       are returned to their default INPUT behaviour.
+     */
+    extern void bcm2835_aux_spi_end(void);
+
+    /*! Sets the AUX SPI clock divider and therefore the AUX SPI clock speed.
+      \param[in] divider The desired AUX SPI clock divider.
+    */
+    extern void bcm2835_aux_spi_setClockDivider(uint16_t);
+
+    /*!
+     * Calculates the input for \sa bcm2835_aux_spi_setClockDivider
+     * @param speed_hz A value between \sa BCM2835_AUX_SPI_CLOCK_MIN and \sa BCM2835_AUX_SPI_CLOCK_MAX
+     * @return Input for \sa bcm2835_aux_spi_setClockDivider
+     */
+    extern uint16_t bcm2835_aux_spi_CalcClockDivider(uint32_t speed_hz);
+
+    /*! Transfers half-word to and from the AUX SPI slave.
+      Asserts the currently selected CS pins during the transfer.
+      \param[in] value The 8 bit data byte to write to MOSI
+      \return The 8 bit byte simultaneously read from  MISO
+      \sa bcm2835_spi_transfern()
+    */
+    extern void bcm2835_aux_spi_write(uint16_t);
+
+    /*! Transfers any number of bytes to the AUX SPI slave.
+      Asserts the CE2 pin during the transfer.
+      \param[in] buf Buffer of bytes to send.
       \param[in] len Number of bytes in the tbuf buffer, and the number of bytes to send
     */
-    extern void bcm2835_spi_writenb(char* buf, uint32_t len);
+    extern void bcm2835_aux_spi_writenb(const char *buf, uint32_t len);
+
+    /*! Transfers any number of bytes to and from the AUX SPI slave
+      using bcm2835_aux_spi_transfernb.
+      The returned data from the slave replaces the transmitted data in the buffer.
+      \param[in,out] buf Buffer of bytes to send. Received bytes will replace the contents
+      \param[in] len Number of bytes int eh buffer, and the number of bytes to send/received
+      \sa bcm2835_aux_spi_transfer()
+    */
+    extern void bcm2835_aux_spi_transfern(char *, uint32_t);
+
+    /*! Transfers any number of bytes to and from the AUX SPI slave.
+      Asserts the CE2 pin during the transfer.
+      Clocks the len 8 bit bytes out on MOSI, and simultaneously clocks in data from MISO.
+      The data read read from the slave is placed into rbuf. rbuf must be at least len bytes long
+      \param[in] tbuf Buffer of bytes to send.
+      \param[out] rbuf Received bytes will by put in this buffer
+      \param[in] len Number of bytes in the tbuf buffer, and the number of bytes to send/received
+    */
+    extern void bcm2835_aux_spi_transfernb(const char *, char *, uint32_t);
 
     /*! @} */
 
