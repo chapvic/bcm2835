@@ -375,7 +375,7 @@ uint8_t bcm2835_spi_transfer(uint8_t value)
     // BUG ALERT: what happens if we get interupted in this section, and someone else
     // accesses a different peripheral? 
     // Clear TX and RX fifos
-    bcm2835_peri_write_nb(paddr, BCM2835_SPI0_CS_CLEAR);
+    bcm2835_peri_set_bits(paddr, BCM2835_SPI0_CS_CLEAR, BCM2835_SPI0_CS_CLEAR);
 
     // Set TA = 1
     bcm2835_peri_set_bits(paddr, BCM2835_SPI0_CS_TA, BCM2835_SPI0_CS_TA);
@@ -411,7 +411,7 @@ void bcm2835_spi_transfern(char* buf, uint32_t len)
     // accesses a different peripheral? 
 
     // Clear TX and RX fifos
-    bcm2835_peri_write_nb(paddr, BCM2835_SPI0_CS_CLEAR);
+    bcm2835_peri_set_bits(paddr, BCM2835_SPI0_CS_CLEAR, BCM2835_SPI0_CS_CLEAR);
 
     // Set TA = 1
     bcm2835_peri_set_bits(paddr, BCM2835_SPI0_CS_TA, BCM2835_SPI0_CS_TA);

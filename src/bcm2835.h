@@ -26,7 +26,7 @@
 /// http://www.open.com.au/mikem/bcm2835
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.3.tar.gz
+/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.4.tar.gz
 /// You can find the latest version at http://www.open.com.au/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -109,6 +109,7 @@
 /// \version 1.1 Minor bug fixes
 /// \version 1.2 Added support for SPI
 /// \version 1.3 Added bcm2835_spi_transfern()
+/// \version 1.4 Fixed a problem that prevented SPI CE1 being used. Reported by David Robinson.
 ///
 /// \author  Mike McCauley (mikem@open.com.au)
 
