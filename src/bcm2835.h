@@ -6,7 +6,7 @@
 //
 // Author: Mike McCauley (mikem@open.com.au)
 // Copyright (C) 2011 Mike McCauley
-// $Id: bcm2835.h,v 1.3 2012/06/26 05:48:43 mikem Exp mikem $
+// $Id: bcm2835.h,v 1.4 2012/07/16 23:57:59 mikem Exp mikem $
 //
 /// \mainpage C library for Broadcom BCM 2835 as used in Raspberry Pi
 ///
@@ -26,7 +26,7 @@
 /// http://www.open.com.au/mikem/bcm2835
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.4.tar.gz
+/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.5.tar.gz
 /// You can find the latest version at http://www.open.com.au/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -110,6 +110,7 @@
 /// \version 1.2 Added support for SPI
 /// \version 1.3 Added bcm2835_spi_transfern()
 /// \version 1.4 Fixed a problem that prevented SPI CE1 being used. Reported by David Robinson.
+/// \version 1.5 Added bcm2835_close() to deinit the library. Suggested by César Ortiz
 ///
 /// \author  Mike McCauley (mikem@open.com.au)
 
@@ -402,6 +403,10 @@ extern "C" {
     /// Prints messages to stderr in case of errors.
     /// \return 1 if successful else 0
     extern int bcm2835_init();
+
+    /// Close the library, deallocating any allocaterd memory and closing /dev/mem
+    /// \return 1 if successful else 0
+    extern int bcm2835_close();
 
     /// Sets the debug level of the library.
     /// A value of 1 prevents mapping to /dev/mem, and makes the library print out

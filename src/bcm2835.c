@@ -5,7 +5,7 @@
 //
 // Author: Mike McCauley (mikem@open.com.au)
 // Copyright (C) 2011 Mike McCauley
-// $Id: bcm2835.c,v 1.3 2012/06/26 05:48:43 mikem Exp mikem $
+// $Id: bcm2835.c,v 1.4 2012/07/16 23:57:59 mikem Exp mikem $
 
 #include "bcm2835.h"
 #include <stdlib.h>
@@ -21,16 +21,24 @@
 //#define BCM2835_TEST
 
 // Locals to hold pointers to the hardware
-static volatile uint32_t *gpio = NULL;
-static volatile uint32_t *pwm  = NULL;
-static volatile uint32_t *clk  = NULL;
-static volatile uint32_t *pads = NULL;
-static volatile uint32_t *spi0 = NULL;
+static volatile uint32_t *gpio = MAP_FAILED;
+static volatile uint32_t *pwm  = MAP_FAILED;
+static volatile uint32_t *clk  = MAP_FAILED;
+static volatile uint32_t *pads = MAP_FAILED;
+static volatile uint32_t *spi0 = MAP_FAILED;
+
+static	int     fd = -1;
+static 	uint8_t *gpioMem = NULL;
+static 	uint8_t *pwmMem  = NULL;
+static 	uint8_t *clkMem  = NULL;
+static 	uint8_t *padsMem = NULL;
+static 	uint8_t *spi0Mem = NULL;
 
 // This define allows us to test on hardware other than RPi.
 // It prevents access to the kernel memory, and does not do any peripheral access
 // Instead it prints out what it _would_ do if debug were 0
 static uint8_t debug = 0;
+
 
 //
 // Low level register access functions
@@ -467,13 +475,12 @@ int bcm2835_init()
 	gpio = (uint32_t*)BCM2835_GPIO_BASE;
 	pwm = (uint32_t*)BCM2835_GPIO_PWM;
 	spi0 = (uint32_t*)BCM2835_SPI0_BASE;
-	return 1;
+	return 1; // Success
     }
     else
     {
-	int      fd ;
-	uint8_t *gpioMem, *pwmMem, *clkMem, *padsMem, *spi0Mem;
-	
+	uint8_t *mapaddr;
+
 	// Open the master /dev/memory device
 	if ((fd = open("/dev/mem", O_RDWR | O_SYNC) ) < 0)
 	{
@@ -489,11 +496,12 @@ int bcm2835_init()
 	    return 0;
 	}
     
-	// ... presumably to make sure we can round it up to a whole page size
-	if (((uint32_t)gpioMem % BCM2835_PAGE_SIZE) != 0)
-	    gpioMem += BCM2835_PAGE_SIZE - ((uint32_t)gpioMem % BCM2835_PAGE_SIZE) ;
+	// ... to make sure we can round it up to a whole page size
+	mapaddr = gpioMem;
+	if (((uint32_t)mapaddr % BCM2835_PAGE_SIZE) != 0)
+	    mapaddr += BCM2835_PAGE_SIZE - ((uint32_t)mapaddr % BCM2835_PAGE_SIZE) ;
     
-	gpio = (uint32_t *)mmap((caddr_t)gpioMem, BCM2835_BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_FIXED, fd, BCM2835_GPIO_BASE) ;
+	gpio = (uint32_t *)mmap(mapaddr, BCM2835_BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_FIXED, fd, BCM2835_GPIO_BASE) ;
     
 	if ((int32_t)gpio < 0)
 	{
@@ -508,10 +516,11 @@ int bcm2835_init()
 	    return 0;
 	}
     
-	if (((uint32_t)pwmMem % BCM2835_PAGE_SIZE) != 0)
-	    pwmMem += BCM2835_PAGE_SIZE - ((uint32_t)pwmMem % BCM2835_PAGE_SIZE) ;
+	mapaddr = pwmMem;
+	if (((uint32_t)mapaddr % BCM2835_PAGE_SIZE) != 0)
+	    mapaddr += BCM2835_PAGE_SIZE - ((uint32_t)mapaddr % BCM2835_PAGE_SIZE) ;
     
-	pwm = (uint32_t *)mmap(pwmMem, BCM2835_BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_FIXED, fd, BCM2835_GPIO_PWM) ;
+	pwm = (uint32_t *)mmap(mapaddr, BCM2835_BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_FIXED, fd, BCM2835_GPIO_PWM) ;
     
 	if ((int32_t)pwm < 0)
 	{
@@ -526,10 +535,11 @@ int bcm2835_init()
 	    return 0;
 	}
     
-	if (((uint32_t)clkMem % BCM2835_PAGE_SIZE) != 0)
-	    clkMem += BCM2835_PAGE_SIZE - ((uint32_t)clkMem % BCM2835_PAGE_SIZE) ;
+	mapaddr = clkMem;
+	if (((uint32_t)mapaddr % BCM2835_PAGE_SIZE) != 0)
+	    mapaddr += BCM2835_PAGE_SIZE - ((uint32_t)mapaddr % BCM2835_PAGE_SIZE) ;
     
-	clk = (uint32_t *)mmap(clkMem, BCM2835_BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_FIXED, fd, BCM2835_CLOCK_BASE) ;
+	clk = (uint32_t *)mmap(mapaddr, BCM2835_BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_FIXED, fd, BCM2835_CLOCK_BASE) ;
     
 	if ((int32_t)clk < 0)
 	{
@@ -543,10 +553,11 @@ int bcm2835_init()
 	    return 0;
 	}
     
-	if (((uint32_t)padsMem % BCM2835_PAGE_SIZE) != 0)
-	    padsMem += BCM2835_PAGE_SIZE - ((uint32_t)padsMem % BCM2835_PAGE_SIZE) ;
+	mapaddr = padsMem;
+	if (((uint32_t)mapaddr % BCM2835_PAGE_SIZE) != 0)
+	    mapaddr += BCM2835_PAGE_SIZE - ((uint32_t)mapaddr % BCM2835_PAGE_SIZE) ;
     
-	pads = (uint32_t *)mmap(padsMem, BCM2835_BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_FIXED, fd, BCM2835_GPIO_PADS) ;
+	pads = (uint32_t *)mmap(mapaddr, BCM2835_BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_FIXED, fd, BCM2835_GPIO_PADS) ;
     
 	if ((int32_t)pads < 0)
 	{
@@ -560,10 +571,11 @@ int bcm2835_init()
 	    return 0;
 	}
     
-	if (((uint32_t)spi0Mem % BCM2835_PAGE_SIZE) != 0)
-	    spi0Mem += BCM2835_PAGE_SIZE - ((uint32_t)spi0Mem % BCM2835_PAGE_SIZE) ;
+	mapaddr = spi0Mem;
+	if (((uint32_t)mapaddr % BCM2835_PAGE_SIZE) != 0)
+	    mapaddr += BCM2835_PAGE_SIZE - ((uint32_t)mapaddr % BCM2835_PAGE_SIZE) ;
     
-	spi0 = (uint32_t *)mmap(spi0Mem, BCM2835_BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_FIXED, fd, BCM2835_SPI0_BASE) ;
+	spi0 = (uint32_t *)mmap(mapaddr, BCM2835_BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_FIXED, fd, BCM2835_SPI0_BASE) ;
     
 	if ((int32_t)spi0 < 0)
 	{
@@ -571,11 +583,68 @@ int bcm2835_init()
 	    return 0;
 	}
 
-	// Success
-	return 1;
+	return 1; // Success
     }
 }
-    
+
+// Close this library and deallocate everything
+int bcm2835_close()
+{
+    if (!debug)
+    {
+	if (gpio != MAP_FAILED)
+	{
+	    munmap((void*)gpio, BCM2835_BLOCK_SIZE);
+	    gpio = MAP_FAILED;
+	}
+	if (gpioMem)
+	{
+	    free(gpioMem);
+	    gpioMem = NULL;
+	}
+
+	if (pwm != MAP_FAILED)
+	{
+	    munmap((void*)pwm, BCM2835_BLOCK_SIZE);
+	    pwm = MAP_FAILED;
+	}
+	if (pwmMem)
+	{
+	    free(pwmMem);
+	    pwmMem = NULL;
+	}
+
+	if (clk != MAP_FAILED)
+	{
+	    munmap((void*)clk, BCM2835_BLOCK_SIZE);
+	    clk = MAP_FAILED;
+	}
+	if (clkMem)
+	{
+	    free(clkMem);
+	    clkMem = NULL;
+	}
+
+	if (spi0 != MAP_FAILED)
+	{
+	    munmap((void*)spi0, BCM2835_BLOCK_SIZE);
+	    spi0 = MAP_FAILED;
+	}
+	if (spi0Mem)
+	{
+	    free(spi0Mem);
+	    spi0Mem = NULL;
+	}
+
+	if (fd >= 0)
+	{
+	    close(fd);
+	    fd = -1;
+	}
+    }
+    return 1; // Success
+}    
+
 #ifdef BCM2835_TEST
 // this is a simple test program that prints out what it will do rather than 
 // actually doing it
@@ -647,6 +716,8 @@ int main(int argc, char **argv)
     }
 #endif
 
+    if (!bcm2835_close())
+	return 1;
 
     return 0;
 }
