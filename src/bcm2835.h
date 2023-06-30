@@ -72,6 +72,18 @@
   bcm2835_spi_begin() and bcm2835_i2c_begin() will return false and all
   other non-gpio operations may fail silently or crash.
 
+  If your program needs acccess to /dev/mem but not as root, 
+  and if you have the libcap-dev package installed on the target, 
+  you can compile this library to use
+  libcap2 so that it tests whether the exceutable has the cap_sys_rawio capability, and therefore
+  permission to access /dev/mem.
+  To enable this ability, uncomment the #define BCM2835_HAVE_LIBCAP in bcm2835.h or 
+  -DBCM2835_HAVE_LIBCAP on your compiler command line.
+  After your program has been compiled:
+  \code
+  sudo setcap cap_sys_rawio+ep *myprogname*
+  \endcode
+
   \par Installation
   
   This library consists of a single non-shared library and header file, which will be
@@ -570,6 +582,10 @@
 #include <stdint.h>
 
 #define BCM2835_VERSION 10064 /* Version 1.64 */
+
+// Define this if you want to use libcap2 to determine if you have the cap_sys_rawio capability
+// and therefore the capability of openeing /dev/mem, even if you are not root
+//#define BCM2835_HAVE_LIBCAP
 
 /* RPi 2 is ARM v7, and has DMB instruction for memory barriers.
    Older RPis are ARM v6 and don't, so a coprocessor instruction must be used instead.

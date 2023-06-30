@@ -7,8 +7,6 @@
 // Copyright (C) 2011-2013 Mike McCauley
 // $Id: bcm2835.c,v 1.28 2020/01/11 05:07:13 mikem Exp mikem $
 */
-
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
@@ -125,6 +123,23 @@ static uint8_t bcm2835_correct_order(uint8_t b)
     else
 	return b;
 }
+
+#ifdef BCM2835_HAVE_LIBCAP
+#include <sys/capability.h>
+static int bcm2835_has_capability(cap_value_t capability)
+{
+    int ok = 0;
+    cap_t cap = cap_get_proc();
+    if (cap)
+    {
+        cap_flag_value_t value;
+        if (cap_get_flag(cap,capability,CAP_EFFECTIVE,&value) == 0 && value == CAP_SET)
+            ok = 1;
+       cap_free(cap);
+    }
+    return ok;
+}
+#endif
 
 /*
 // Low level register access functions
@@ -1845,7 +1860,11 @@ int bcm2835_init(void)
      */
     memfd = -1;
     ok = 0;
-    if (geteuid() == 0)
+    if (geteuid() == 0
+#ifdef BCM2835_HAVE_LIBCAP2
+	|| bcm2835_has_capability(CAP_SYS_RAWIO)
+#endif
+	)
     {
       /* Open the master /dev/mem device */
       if ((memfd = open("/dev/mem", O_RDWR | O_SYNC) ) < 0) 
