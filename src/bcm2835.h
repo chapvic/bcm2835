@@ -22,7 +22,7 @@
 /// BCM 2835).
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.21.tar.gz
+/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.22.tar.gz
 /// You can find the latest version at http://www.open.com.au/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -219,6 +219,8 @@
 /// \version 1.20 Patch from Mark Dootson to close /dev/mem after access to the peripherals has been granted.
 /// \version 1.21 delayMicroseconds is now not susceptible to 32 bit timer overruns. 
 ///               Patch courtesy Jeremy Mortis.
+/// \version 1.22 Fixed incorrect definition of BCM2835_GPFEN0 which broke the ability to set 
+///               falling edge events. Reported by MArk Dootson.
 /// \author  Mike McCauley (mikem@airspayce.com)
 
 
@@ -321,7 +323,7 @@ extern volatile uint32_t *bcm2835_bsc1;
 #define BCM2835_GPEDS1                       0x0044 ///< GPIO Pin Event Detect Status 1
 #define BCM2835_GPREN0                       0x004c ///< GPIO Pin Rising Edge Detect Enable 0
 #define BCM2835_GPREN1                       0x0050 ///< GPIO Pin Rising Edge Detect Enable 1
-#define BCM2835_GPFEN0                       0x0048 ///< GPIO Pin Falling Edge Detect Enable 0
+#define BCM2835_GPFEN0                       0x0058 ///< GPIO Pin Falling Edge Detect Enable 0
 #define BCM2835_GPFEN1                       0x005c ///< GPIO Pin Falling Edge Detect Enable 1
 #define BCM2835_GPHEN0                       0x0064 ///< GPIO Pin High Detect Enable 0
 #define BCM2835_GPHEN1                       0x0068 ///< GPIO Pin High Detect Enable 1
