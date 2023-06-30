@@ -17,6 +17,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <sys/types.h>
 
 #define BCK2835_LIBRARY_BUILD
 #include "bcm2835.h"
@@ -405,6 +406,9 @@ void bcm2835_gpio_pudclk(uint8_t pin, uint8_t on)
 /* Read GPIO pad behaviour for groups of GPIOs */
 uint32_t bcm2835_gpio_pad(uint8_t group)
 {
+  if (bcm2835_pads == MAP_FAILED)
+    return 0;
+  
     volatile uint32_t* paddr = bcm2835_pads + BCM2835_PADS_GPIO_0_27/4 + group;
     return bcm2835_peri_read(paddr);
 }
@@ -415,6 +419,9 @@ uint32_t bcm2835_gpio_pad(uint8_t group)
 */
 void bcm2835_gpio_set_pad(uint8_t group, uint32_t control)
 {
+  if (bcm2835_pads == MAP_FAILED)
+    return;
+  
     volatile uint32_t* paddr = bcm2835_pads + BCM2835_PADS_GPIO_0_27/4 + group;
     bcm2835_peri_write(paddr, control | BCM2835_PAD_PASSWRD);
 }
@@ -516,10 +523,13 @@ void bcm2835_gpio_set_pud(uint8_t pin, uint8_t pud)
     bcm2835_gpio_pudclk(pin, 0);
 }
 
-void bcm2835_spi_begin(void)
+int bcm2835_spi_begin(void)
 {
     volatile uint32_t* paddr;
 
+    if (bcm2835_spi0 == MAP_FAILED)
+      return 0; /* bcm2835_init() failed, or not root */
+    
     /* Set the SPI0 pins to the Alt 0 function to enable SPI0 access on them */
     bcm2835_gpio_fsel(RPI_GPIO_P1_26, BCM2835_GPIO_FSEL_ALT0); /* CE1 */
     bcm2835_gpio_fsel(RPI_GPIO_P1_24, BCM2835_GPIO_FSEL_ALT0); /* CE0 */
@@ -533,6 +543,8 @@ void bcm2835_spi_begin(void)
     
     /* Clear TX and RX fifos */
     bcm2835_peri_write_nb(paddr, BCM2835_SPI0_CS_CLEAR);
+
+    return 1; // OK
 }
 
 void bcm2835_spi_end(void)
@@ -547,7 +559,7 @@ void bcm2835_spi_end(void)
 
 void bcm2835_spi_setBitOrder(uint8_t __attribute__((unused)) order)
 {
-    /* BCM2835_SPI_BIT_ORDER_MSBFIRST is the only one suported by SPI0 */
+    /* BCM2835_SPI_BIT_ORDER_MSBFIRST is the only one supported by SPI0 */
 }
 
 /* defaults to 0, which means a divider of 65536.
@@ -714,9 +726,13 @@ void bcm2835_spi_setChipSelectPolarity(uint8_t cs, uint8_t active)
     bcm2835_peri_set_bits(paddr, active << shift, 1 << shift);
 }
 
-void bcm2835_i2c_begin(void)
+int bcm2835_i2c_begin(void)
 {
     uint16_t cdiv;
+
+    if (   bcm2835_bsc0 == MAP_FAILED
+	|| bcm2835_bsc1 == MAP_FAILED)
+      return 0; /* bcm2835_init() failed, or not root */
 
 #ifdef I2C_V1
     volatile uint32_t* paddr = bcm2835_bsc0 + BCM2835_BSC_DIV/4;
@@ -737,6 +753,8 @@ void bcm2835_i2c_begin(void)
     // 9 = Clocks per byte : 8 bits + ACK
     */
     i2c_byte_wait_us = ((float)cdiv / BCM2835_CORE_CLK_HZ) * 1000000 * 9;
+
+    return 1;
 }
 
 void bcm2835_i2c_end(void)
@@ -1173,6 +1191,10 @@ void bcm2835_st_delay(uint64_t offset_micros, uint64_t micros)
 
 void bcm2835_pwm_set_clock(uint32_t divisor)
 {
+    if (   bcm2835_clk == MAP_FAILED
+        || bcm2835_pwm == MAP_FAILED)
+      return; /* bcm2835_init() failed or not root */
+  
     /* From Gerts code */
     divisor &= 0xfff;
     /* Stop PWM clock */
@@ -1188,6 +1210,10 @@ void bcm2835_pwm_set_clock(uint32_t divisor)
 
 void bcm2835_pwm_set_mode(uint8_t channel, uint8_t markspace, uint8_t enabled)
 {
+  if (   bcm2835_clk == MAP_FAILED
+       || bcm2835_pwm == MAP_FAILED)
+    return; /* bcm2835_init() failed or not root */
+
   uint32_t control = bcm2835_peri_read(bcm2835_pwm + BCM2835_PWM_CONTROL);
 
   if (channel == 0)
@@ -1221,6 +1247,10 @@ void bcm2835_pwm_set_mode(uint8_t channel, uint8_t markspace, uint8_t enabled)
 
 void bcm2835_pwm_set_range(uint8_t channel, uint32_t range)
 {
+  if (   bcm2835_clk == MAP_FAILED
+       || bcm2835_pwm == MAP_FAILED)
+    return; /* bcm2835_init() failed or not root */
+
   if (channel == 0)
       bcm2835_peri_write_nb(bcm2835_pwm + BCM2835_PWM0_RANGE, range);
   else if (channel == 1)
@@ -1229,6 +1259,10 @@ void bcm2835_pwm_set_range(uint8_t channel, uint32_t range)
 
 void bcm2835_pwm_set_data(uint8_t channel, uint32_t data)
 {
+  if (   bcm2835_clk == MAP_FAILED
+       || bcm2835_pwm == MAP_FAILED)
+    return; /* bcm2835_init() failed or not root */
+
   if (channel == 0)
       bcm2835_peri_write_nb(bcm2835_pwm + BCM2835_PWM0_DATA, data);
   else if (channel == 1)
@@ -1300,35 +1334,60 @@ int bcm2835_init(void)
     }
     /* else we are prob on RPi 1 with BCM2835, and use the hardwired defaults */
 
-    /* Now get ready to map the peripherals block */
+    /* Now get ready to map the peripherals block 
+     * If we are not root, try for the new /dev/gpiomem interface and accept
+     * the fact that we can only access GPIO
+     * else try for the /dev/mem interface and get access to everything
+     */
     memfd = -1;
     ok = 0;
-    /* Open the master /dev/memory device */
-    if ((memfd = open("/dev/mem", O_RDWR | O_SYNC) ) < 0) 
+    if (geteuid() == 0)
     {
-	fprintf(stderr, "bcm2835_init: Unable to open /dev/mem: %s\n",
-		strerror(errno)) ;
-	goto exit;
+      /* Open the master /dev/mem device */
+      if ((memfd = open("/dev/mem", O_RDWR | O_SYNC) ) < 0) 
+	{
+	  fprintf(stderr, "bcm2835_init: Unable to open /dev/mem: %s\n",
+		  strerror(errno)) ;
+	  goto exit;
+	}
+      
+      /* Base of the peripherals block is mapped to VM */
+      bcm2835_peripherals = mapmem("gpio", bcm2835_peripherals_size, memfd, (uint32_t)bcm2835_peripherals_base);
+      if (bcm2835_peripherals == MAP_FAILED) goto exit;
+      
+      /* Now compute the base addresses of various peripherals, 
+      // which are at fixed offsets within the mapped peripherals block
+      // Caution: bcm2835_peripherals is uint32_t*, so divide offsets by 4
+      */
+      bcm2835_gpio = bcm2835_peripherals + BCM2835_GPIO_BASE/4;
+      bcm2835_pwm  = bcm2835_peripherals + BCM2835_GPIO_PWM/4;
+      bcm2835_clk  = bcm2835_peripherals + BCM2835_CLOCK_BASE/4;
+      bcm2835_pads = bcm2835_peripherals + BCM2835_GPIO_PADS/4;
+      bcm2835_spi0 = bcm2835_peripherals + BCM2835_SPI0_BASE/4;
+      bcm2835_bsc0 = bcm2835_peripherals + BCM2835_BSC0_BASE/4; /* I2C */
+      bcm2835_bsc1 = bcm2835_peripherals + BCM2835_BSC1_BASE/4; /* I2C */
+      bcm2835_st   = bcm2835_peripherals + BCM2835_ST_BASE/4;
+      
+      ok = 1;
     }
-	
-    /* Base of the peripherals block is mapped to VM */
-    bcm2835_peripherals = mapmem("gpio", bcm2835_peripherals_size, memfd, (uint32_t)bcm2835_peripherals_base);
-    if (bcm2835_peripherals == MAP_FAILED) goto exit;
-
-    /* Now compute the base addresses of various peripherals, 
-    // which are at fixed offsets within the mapped peripherals block
-    // Caution: bcm2835_peripherals is uint32_t*, so divide offsets by 4
-    */
-    bcm2835_gpio = bcm2835_peripherals + BCM2835_GPIO_BASE/4;
-    bcm2835_pwm  = bcm2835_peripherals + BCM2835_GPIO_PWM/4;
-    bcm2835_clk  = bcm2835_peripherals + BCM2835_CLOCK_BASE/4;
-    bcm2835_pads = bcm2835_peripherals + BCM2835_GPIO_PADS/4;
-    bcm2835_spi0 = bcm2835_peripherals + BCM2835_SPI0_BASE/4;
-    bcm2835_bsc0 = bcm2835_peripherals + BCM2835_BSC0_BASE/4; /* I2C */
-    bcm2835_bsc1 = bcm2835_peripherals + BCM2835_BSC1_BASE/4; /* I2C */
-    bcm2835_st   = bcm2835_peripherals + BCM2835_ST_BASE/4;
-
-    ok = 1;
+    else
+    {
+      /* Not root, try /dev/gpiomem */
+      /* Open the master /dev/mem device */
+      if ((memfd = open("/dev/gpiomem", O_RDWR | O_SYNC) ) < 0) 
+	{
+	  fprintf(stderr, "bcm2835_init: Unable to open /dev/gpiomem: %s\n",
+		  strerror(errno)) ;
+	  goto exit;
+	}
+      
+      /* Base of the peripherals block is mapped to VM */
+      bcm2835_peripherals_base = 0;
+      bcm2835_peripherals = mapmem("gpio", bcm2835_peripherals_size, memfd, (uint32_t)bcm2835_peripherals_base);
+      if (bcm2835_peripherals == MAP_FAILED) goto exit;
+      bcm2835_gpio = bcm2835_peripherals;
+      ok = 1;
+    }
 
 exit:
     if (memfd >= 0)
