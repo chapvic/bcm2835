@@ -5,11 +5,11 @@
 //
 // After installing bcm2835, you can build this 
 // with something like:
-// gcc -o spin  -l rt spin.c -l bcm2835
+// gcc -o spin spin.c -l bcm2835
 // sudo ./spin
 //
 // Or you can test it before installing with:
-// gcc -o spin  -l rt -I ../../src ../../src/bcm2835.c spin.c
+// gcc -o spin -I ../../src ../../src/bcm2835.c spin.c
 // sudo ./spin
 //
 // Author: Mike McCauley (mikem@open.com.au)

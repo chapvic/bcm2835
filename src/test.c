@@ -1,6 +1,7 @@
 // Test program for bcm2835 library
 // You can only expect this to run correctly
-// as root on Raspberry Pi hardware
+// as root on Raspberry Pi hardware, but it will compile and run with little effect
+// on other hardware
 //
 // Author: Mike McCauley (mikem@open.com.au)
 // Copyright (C) 2011 Mike McCauley
@@ -11,12 +12,6 @@
 
 int main(int argc, char **argv)
 {
-    // Check name compatibility
-    delay(100);
-    delayMicroseconds(100);
-    bcm2835_delay(100);
-    bcm2835_delayMicroseconds(100);
-
     if (geteuid() == 0)
     {
 	if (!bcm2835_init())

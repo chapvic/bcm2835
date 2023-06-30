@@ -4,7 +4,7 @@
 //
 // Author: Mike McCauley (mikem@airspayce.com)
 // Copyright (C) 2011-2012 Mike McCauley
-// $Id: bcm2835.h,v 1.7 2012/12/01 22:56:52 mikem Exp mikem $
+// $Id: bcm2835.h,v 1.8 2013/02/15 22:06:09 mikem Exp mikem $
 //
 /// \mainpage C library for Broadcom BCM 2835 as used in Raspberry Pi
 ///
@@ -13,15 +13,16 @@
 /// allowing access to the GPIO pins on the
 /// 26 pin IDE plug on the RPi board so you can control and interface with various external devices.
 ///
-/// It provides functions for reading digital inputs and setting digital outputs.
-/// Pin event detection is supported by polling (interrupts not supported).
+/// It provides functions for reading digital inputs and setting digital outputs, using SPI and I2C,
+/// and for accessing the system timers.
+/// Pin event detection is supported by polling (interrupts are not supported).
 ///
 /// It is C++ compatible, and installs as a header file and non-shared library on 
 /// any Linux-based distro (but clearly is no use except on Raspberry Pi or another board with 
 /// BCM 2835).
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.17.tar.gz
+/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.18.tar.gz
 /// You can find the latest version at http://www.open.com.au/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -75,6 +76,9 @@
 /// bcm2835_clk
 /// bcm2835_pads
 /// bcm2835_spio0
+/// bcm2835_st
+/// bcm2835_bsc0
+/// bcm2835_bsc1
 ///
 /// \par Pin Numbering
 ///
@@ -111,6 +115,38 @@
 /// - P1-24 (CE0) 
 /// - P1-26 (CE1)
 ///
+/// \par I2C Pins
+///
+/// The bcm2835_i2c_* functions allow you to control the BCM 2835 BSC interface,
+/// allowing you to send and received data by I2C ("eye-squared cee"; generically referred to as "two-wire interface") .
+/// For more information about I²C, see http://en.wikipedia.org/wiki/I%C2%B2C
+///
+/// The Raspberry Pi V2 GPIO pins used for I2C are:
+///
+/// - P1-03 (SDA)
+/// - P1-05 (SLC)
+///
+/// \par Real Time performance constraints
+///
+/// The bcm2835 is a library for user programs (i.e. they run in 'userland'). 
+/// Such programs are not part of the kernel and are usually
+/// subject to paging and swapping by the kernel while it does other things besides running your program. 
+/// This means that you should not expect to get real-time performance or 
+/// real-time timing constraints from such programs. In particular, there is no guarantee that the 
+/// bcm2835_delay() and bcm2835_delayMicroseconds() will return after exactly the time requested. 
+/// In fact, depending on other activity on the host, IO etc, you might get significantly longer delay times
+/// than the one you asked for. So please dont expect to get exactly the time delay you request.
+///
+/// Arjan reports that you can prevent swapping on Linux with the following code fragment:
+///
+/// \code
+///  struct sched_param sp;
+///  memset(&sp, 0, sizeof(sp));
+///  sp.sched_priority = sched_get_priority_max(SCHED_FIFO);
+///  sched_setscheduler(0, SCHED_FIFO, &sp);
+///  mlockall(MCL_CURRENT | MCL_FUTURE);
+/// \endcode
+///
 /// \par Open Source Licensing GPL V2
 ///
 /// This is the appropriate option if you want to share the source code of your
@@ -123,6 +159,7 @@
 /// \par Acknowledgements
 ///
 /// Some of this code has been inspired by Dom and Gert.
+/// The I2C code has been inspired by Alan Barr.
 /// 
 /// \par Revision History
 ///
@@ -135,7 +172,7 @@
 /// \version 1.6 Document testing on 2012-07-15-wheezy-raspbian and Occidentalisv01
 ///              Functions bcm2835_gpio_ren(), bcm2835_gpio_fen(), bcm2835_gpio_hen()
 ///               bcm2835_gpio_len(), bcm2835_gpio_aren() and bcm2835_gpio_afen() now 
-///               changes only the pin specified. Other pins that were already previoulsy
+///               changes only the pin specified. Other pins that were already previously
 ///               enabled stay enabled.
 ///              Added  bcm2835_gpio_clr_ren(), bcm2835_gpio_clr_fen(), bcm2835_gpio_clr_hen()
 ///                bcm2835_gpio_clr_len(), bcm2835_gpio_clr_aren(), bcm2835_gpio_clr_afen() 
@@ -162,17 +199,20 @@
 ///              Macros to map delayMicroseconds()-> bcm2835_delayMicroseconds(), which
 ///              can be disabled by defining BCM2835_NO_DELAY_COMPATIBILITY
 /// \version 1.11 Fixed incorrect link to download file
-/// \version 1.12 New GPIO pin definitions for RPi version 2 (which has a diffrent GPIO mapping)             
+/// \version 1.12 New GPIO pin definitions for RPi version 2 (which has a different GPIO mapping)             
 /// \version 1.13 New GPIO pin definitions for RPi version 2 plug P5
 ///               Hardware base pointers are now available (after initialisation) externally as bcm2835_gpio
 ///               bcm2835_pwm bcm2835_clk bcm2835_pads bcm2835_spi0.
 /// \version 1.14 Now compiles even if CLOCK_MONOTONIC_RAW is not available, uses CLOCK_MONOTONIC instead.
-///               Fixed errors in documentation of SPI divider prefquencies based on 250MHz clock. 
+///               Fixed errors in documentation of SPI divider frequencies based on 250MHz clock. 
 ///               Reported by Ben Simpson.
 /// \version 1.15 Added bcm2835_close() to end of examples as suggested by Mark Wolfe.
 /// \version 1.16 Added bcm2835_gpio_set_multi, bcm2835_gpio_clr_multi and bcm2835_gpio_write_multi
 ///               to allow a mask of pins to be set all at once. Requested by Sebastian Loncar.
-/// \version 1.7  Added bcm2835_gpio_write_mask. Requested by Sebastian Loncar.
+/// \version 1.17  Added bcm2835_gpio_write_mask. Requested by Sebastian Loncar.
+/// \version 1.18 Added bcm2835_i2c_* functions. Changes to bcm2835_delayMicroseconds: 
+///               now uses the RPi system timer counter, instead of clock_gettime, for improved accuracy. 
+///               No need to link with -lrt now. Contributed by Arjan van Vught.
 /// \author  Mike McCauley (mikem@airspayce.com)
 
 
@@ -193,9 +233,14 @@
 /// This means pin LOW, false, 0volts on a pin.
 #define LOW  0x0
 
+/// Speed of the core clock core_clk
+#define BCM2835_CORE_CLK_HZ				250000000	///< 250 MHz
+
 // Physical addresses for various peripheral register sets
 /// Base Physical Address of the BCM 2835 peripheral registers
 #define BCM2835_PERI_BASE               0x20000000
+/// Base Physical Address of the System Timer registers
+#define BCM2835_ST_BASE					(BCM2835_PERI_BASE + 0x3000)
 /// Base Physical Address of the Pads registers
 #define BCM2835_GPIO_PADS               (BCM2835_PERI_BASE + 0x100000)
 /// Base Physical Address of the Clock/timer registers
@@ -204,8 +249,17 @@
 #define BCM2835_GPIO_BASE               (BCM2835_PERI_BASE + 0x200000)
 /// Base Physical Address of the SPI0 registers
 #define BCM2835_SPI0_BASE                (BCM2835_PERI_BASE + 0x204000)
+/// Base Physical Address of the BSC0 registers
+#define BCM2835_BSC0_BASE 				 (BCM2835_PERI_BASE + 0x205000)
 /// Base Physical Address of the PWM registers
 #define BCM2835_GPIO_PWM                (BCM2835_PERI_BASE + 0x20C000)
+ /// Base Physical Address of the BSC1 registers
+#define BCM2835_BSC1_BASE				 (BCM2835_PERI_BASE + 0x804000)
+
+
+/// Base of the ST (System Timer) registers.
+/// Available after bcm2835_init has been called
+extern volatile uint32_t *bcm2835_st;
 
 /// Base of the GPIO registers.
 /// Available after bcm2835_init has been called
@@ -227,6 +281,13 @@ extern volatile uint32_t *bcm2835_pads;
 /// Available after bcm2835_init has been called
 extern volatile uint32_t *bcm2835_spi0;
 
+/// Base of the BSC0 registers.
+/// Available after bcm2835_init has been called
+extern volatile uint32_t *bcm2835_bsc0;
+
+/// Base of the BSC1 registers.
+/// Available after bcm2835_init has been called
+extern volatile uint32_t *bcm2835_bsc1;
 
 /// Size of memory page on RPi
 #define BCM2835_PAGE_SIZE               (4*1024)
@@ -469,6 +530,72 @@ typedef enum
     BCM2835_SPI_CLOCK_DIVIDER_1     = 1,       ///< 0 = 262.144us = 3.814697260kHz, same as 0/65536
 } bcm2835SPIClockDivider;
 
+// Defines for I2C
+// GPIO register offsets from BCM2835_BSC*_BASE.
+// Offsets into the BSC Peripheral block in bytes per 3.1 BSC Register Map
+#define BCM2835_BSC_C 							0x0000 ///< BSC Master Control
+#define BCM2835_BSC_S 							0x0004 ///< BSC Master Status
+#define BCM2835_BSC_DLEN						0x0008 ///< BSC Master Data Length
+#define BCM2835_BSC_A 							0x000c ///< BSC Master Slave Address
+#define BCM2835_BSC_FIFO						0x0010 ///< BSC Master Data FIFO
+#define BCM2835_BSC_DIV							0x0014 ///< BSC Master Clock Divider
+#define BCM2835_BSC_DEL							0x0018 ///< BSC Master Data Delay
+#define BCM2835_BSC_CLKT						0x001c ///< BSC Master Clock Stretch Timeout
+
+// Register masks for BSC_C
+#define BCM2835_BSC_C_I2CEN 					0x00008000 ///< I2C Enable, 0 = disabled, 1 = enabled
+#define BCM2835_BSC_C_INTR 						0x00000400 ///< Interrupt on RX
+#define BCM2835_BSC_C_INTT 						0x00000200 ///< Interrupt on TX
+#define BCM2835_BSC_C_INTD 						0x00000100 ///< Interrupt on DONE
+#define BCM2835_BSC_C_ST 						0x00000080 ///< Start transfer, 1 = Start a new transfer
+#define BCM2835_BSC_C_CLEAR_1 					0x00000020 ///< Clear FIFO Clear
+#define BCM2835_BSC_C_CLEAR_2 					0x00000010 ///< Clear FIFO Clear
+#define BCM2835_BSC_C_READ 						0x00000001 ///<	Read transfer
+
+// Register masks for BSC_S
+#define BCM2835_BSC_S_CLKT 						0x00000200 ///< Clock stretch timeout
+#define BCM2835_BSC_S_ERR 						0x00000100 ///< ACK error
+#define BCM2835_BSC_S_RXF 						0x00000080 ///< RXF FIFO full, 0 = FIFO is not full, 1 = FIFO is full
+#define BCM2835_BSC_S_TXE 						0x00000040 ///< TXE FIFO full, 0 = FIFO is not full, 1 = FIFO is full
+#define BCM2835_BSC_S_RXD 						0x00000020 ///< RXD FIFO contains data
+#define BCM2835_BSC_S_TXD 						0x00000010 ///< TXD FIFO can accept data
+#define BCM2835_BSC_S_RXR 						0x00000008 ///< RXR FIFO needs reading (full)
+#define BCM2835_BSC_S_TXW 						0x00000004 ///< TXW FIFO needs writing (full)
+#define BCM2835_BSC_S_DONE 						0x00000002 ///< Transfer DONE
+#define BCM2835_BSC_S_TA 						0x00000001 ///< Transfer Active
+
+#define BCM2835_BSC_FIFO_SIZE   				16 ///< BSC FIFO size
+
+/// \brief bcm2835I2CClockDivider
+/// Specifies the divider used to generate the I2C clock from the system clock.
+/// Clock divided is based on nominal base clock rate of 250MHz
+typedef enum
+{
+    BCM2835_I2C_CLOCK_DIVIDER_2500   = 2500,      ///< 2500 = 10us = 100 kHz
+    BCM2835_I2C_CLOCK_DIVIDER_626    = 626,       ///< 622 = 2.504us = 399.3610 kHz
+    BCM2835_I2C_CLOCK_DIVIDER_150    = 150,       ///< 150 = 60ns = 1.666 MHz (default at reset)
+    BCM2835_I2C_CLOCK_DIVIDER_148    = 148,       ///< 148 = 59ns = 1.689 MHz
+} bcm2835I2CClockDivider;
+
+/// \brief bcm2835I2CReasonCodes
+/// Specifies the reason codes for the bcm2835_i2c_write and bcm2835_i2c_read functions.
+typedef enum
+{
+    BCM2835_I2C_REASON_OK   		 = 0x00,      ///< Success
+    BCM2835_I2C_REASON_ERROR_NACK    = 0x01,      ///< Received a NACK
+    BCM2835_I2C_REASON_ERROR_CLKT    = 0x02,      ///< Received Clock Stretch Timeout
+    BCM2835_I2C_REASON_ERROR_DATA    = 0x04,      ///< Not all data is sent / received
+} bcm2835I2CReasonCodes;
+
+// Defines for ST
+// GPIO register offsets from BCM2835_ST_BASE.
+// Offsets into the ST Peripheral block in bytes per 12.1 System Timer Registers
+// The System Timer peripheral provides four 32-bit timer channels and a single 64-bit free running counter.
+// BCM2835_ST_CLO is the System Timer Counter Lower bits register.
+// The system timer free-running counter lower register is a read-only register that returns the current value
+// of the lower 32-bits of the free running counter.
+#define BCM2835_ST_CS 							0x0000 ///< System Timer Control/Status
+#define BCM2835_ST_CLO 							0x0004 ///< System Timer Counter Lower 32 bits
 
 /// @}
 
@@ -550,7 +677,7 @@ extern "C" {
     /// \param[in] paddr Physical address to read from. See BCM2835_GPIO_BASE etc.
     /// \return the value read from the 32 bit register
     /// \sa Physical Addresses
-    extern uint32_t bcm2835_peri_read(volatile uint32_t* paddr);
+    extern uint32_t inline bcm2835_peri_read(volatile uint32_t* paddr);
 
 
     /// Reads 32 bit value from a peripheral address without the read barrier
@@ -559,7 +686,7 @@ extern "C" {
     /// \param[in] paddr Physical address to read from. See BCM2835_GPIO_BASE etc.
     /// \return the value read from the 32 bit register
     /// \sa Physical Addresses
-    extern uint32_t bcm2835_peri_read_nb(volatile uint32_t* paddr);
+    extern uint32_t inline bcm2835_peri_read_nb(volatile uint32_t* paddr);
 
 
     /// Writes 32 bit value from a peripheral address
@@ -568,7 +695,7 @@ extern "C" {
     /// \param[in] paddr Physical address to read from. See BCM2835_GPIO_BASE etc.
     /// \param[in] value The 32 bit value to write
     /// \sa Physical Addresses
-    extern void bcm2835_peri_write(volatile uint32_t* paddr, uint32_t value);
+    extern void inline bcm2835_peri_write(volatile uint32_t* paddr, uint32_t value);
 
     /// Writes 32 bit value from a peripheral address without the write barrier
     /// You should only use this when your code has previously called bcm2835_peri_write()
@@ -576,7 +703,7 @@ extern "C" {
     /// \param[in] paddr Physical address to read from. See BCM2835_GPIO_BASE etc.
     /// \param[in] value The 32 bit value to write
     /// \sa Physical Addresses
-    extern void bcm2835_peri_write_nb(volatile uint32_t* paddr, uint32_t value);
+    extern void inline bcm2835_peri_write_nb(volatile uint32_t* paddr, uint32_t value);
 
     /// Alters a number of bits in a 32 peripheral regsiter.
     /// It reads the current valu and then alters the bits deines as 1 in mask, 
@@ -741,22 +868,28 @@ extern "C" {
 
     /// Delays for the specified number of milliseconds.
     /// Uses nanosleep(), and therefore does not use CPU until the time is up.
+    /// However, you are at the mercy of nanosleep(). From the manual for nanosleep():
+    /// If the interval specified in req is not an exact multiple of the granularity  
+    /// underlying  clock  (see  time(7)),  then the interval will be
+    /// rounded up to the next multiple. Furthermore, after the sleep completes, 
+    /// there may still be a delay before the CPU becomes free to once
+    /// again execute the calling thread.
     /// \param[in] millis Delay in milliseconds
     extern void bcm2835_delay (unsigned int millis);
 
     /// Delays for the specified number of microseconds.
-    /// Uses nanosleep(), and therefore does not use CPU until the time is up.
-    /// However, you are at the mercy of nanosleep(). From the manual for nanosleep:
+    /// Uses a combination of nanosleep() and a busy wait loop on the BCM2835 system timers,
+    /// However, you are at the mercy of nanosleep(). From the manual for nanosleep():
     /// If the interval specified in req is not an exact multiple of the granularity  
-    /// underlying  clock  (see  time(7)),  then  the  interval will be
-    /// rounded up to the next multiple.  Furthermore,  after  the  sleep  com-
-    /// pletes,  there may still be a delay before the CPU becomes free to once
+    /// underlying  clock  (see  time(7)),  then the interval will be
+    /// rounded up to the next multiple. Furthermore, after the sleep completes, 
+    /// there may still be a delay before the CPU becomes free to once
     /// again execute the calling thread.
-    /// For times less than about 450 microseconds, uses a busy wait on a high resolution timer.
+    /// For times less than about 450 microseconds, uses a busy wait on the System Timer.
     /// It is reported that a delay of 0 microseconds on RaspberryPi will in fact
-    /// result in a dleay of about 80 microseconds. Your mileage may vary.
+    /// result in a delay of about 80 microseconds. Your mileage may vary.
     /// \param[in] micros Delay in microseconds
-    extern void bcm2835_delayMicroseconds (unsigned int micros);
+    extern void bcm2835_delayMicroseconds (uint32_t micros);
 
     /// Sets the output state of the specified pin
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
@@ -803,19 +936,19 @@ extern "C" {
     /// NOTE: has no effect. Not supported by SPI0.
     /// Defaults to 
     /// \param[in] order The desired bit order, one of BCM2835_SPI_BIT_ORDER_*, 
-  /// see \ref bcm2835SPIBitOrder
+    /// see \ref bcm2835SPIBitOrder
     extern void bcm2835_spi_setBitOrder(uint8_t order);
 
     /// Sets the SPI clock divider and therefore the 
     /// SPI clock speed. 
     /// \param[in] divider The desired SPI clock divider, one of BCM2835_SPI_CLOCK_DIVIDER_*, 
-  /// see \ref bcm2835SPIClockDivider
+    /// see \ref bcm2835SPIClockDivider
     extern void bcm2835_spi_setClockDivider(uint16_t divider);
 
     /// Sets the SPI data mode
     /// Sets the clock polariy and phase
     /// \param[in] mode The desired data mode, one of BCM2835_SPI_MODE*, 
-  /// see \ref bcm2835SPIMode
+    /// see \ref bcm2835SPIMode
     extern void bcm2835_spi_setDataMode(uint8_t mode);
 
     /// Sets the chip select pin(s)
@@ -865,6 +998,70 @@ extern "C" {
     /// \sa bcm2835_spi_transfer()
     extern void bcm2835_spi_transfern(char* buf, uint32_t len);
 
+    /// Transfers any number of bytes to the currently selected SPI slave.
+    /// Asserts the currently selected CS pins (as previously set by bcm2835_spi_chipSelect)
+    /// during the transfer.
+    /// \param[in] buf Buffer of bytes to send.
+    /// \param[in] len Number of bytes in the tbuf buffer, and the number of bytes to send
+    extern void bcm2835_spi_writenb(char* buf, uint32_t len);
+
+    /// @}
+
+    /// \defgroup i2c I2C access
+    /// These functions let you use I2C (The Broadcom Serial Control bus with the Philips
+    /// I2C bus/interface version 2.1 January 2000.) to interface with an external I2C device.
+    /// @{
+
+    /// Start I2C operations.
+    /// Forces RPi I2C pins P1-03 (SDA) and P1-05 (SCL)
+    /// to alternate function ALT0, which enables those pins for I2C interface.
+    /// You should call bcm2835_i2c_end() when all I2C functions are complete to return the pins to
+    /// their default functions
+    /// \sa  bcm2835_i2c_end()
+    extern void bcm2835_i2c_begin(void);
+
+    /// End I2C operations.
+    /// I2C pins P1-03 (SDA) and P1-05 (SCL)
+    /// are returned to their default INPUT behaviour.
+    extern void bcm2835_i2c_end(void);
+
+    /// Sets the I2C slave address.
+    /// \param[in] addr The I2C slave address.
+    extern void bcm2835_i2c_setSlaveAddress(uint8_t addr);
+
+    /// Sets the I2C clock divider and therefore the I2C clock speed.
+    /// \param[in] divider The desired I2C clock divider, one of BCM2835_I2C_CLOCK_DIVIDER_*,
+    /// see \ref bcm2835I2CClockDivider
+    extern void bcm2835_i2c_setClockDivider(uint16_t divider);
+
+    /// Transfers any number of bytes to the currently selected I2C slave.
+    /// (as previously set by \sa bcm2835_i2c_setSlaveAddress)
+    /// \param[in] buf Buffer of bytes to send.
+    /// \param[in] len Number of bytes in the buf buffer, and the number of bytes to send.
+	/// \return reason see \ref bcm2835I2CReasonCodes
+    extern uint8_t bcm2835_i2c_write(const char * buf, uint32_t len);
+
+    /// Transfers any number of bytes from the currently selected I2C slave.
+    /// (as previously set by \sa bcm2835_i2c_setSlaveAddress)
+    /// \param[in] buf Buffer of bytes to receive.
+    /// \param[in] len Number of bytes in the buf buffer, and the number of bytes to received.
+	/// \return reason see \ref bcm2835I2CReasonCodes
+    extern uint8_t bcm2835_i2c_read(char* buf, uint32_t len);
+
+    /// @}
+
+    /// \defgroup st System Timer access
+    /// Allows access to and delays using the System Timer Counter.
+    /// @{
+
+    /// Read the System Timer Counter Lower 32 bits register.
+    /// \return the value read from the System Timer Counter Lower 32 bits register
+    uint32_t bcm2835_st_read(void);
+
+    /// Delays for the specified number of microseconds with offset.
+    /// \param[in] offset_micros Offset in microseconds
+    /// \param[in] micros Delay in microseconds
+    extern void bcm2835_st_delay(uint32_t offset_micros, uint32_t micros);
 
     /// @} 
 
