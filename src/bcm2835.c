@@ -54,7 +54,7 @@ void  bcm2835_set_debug(uint8_t d)
 }
 
 // safe read from peripheral
-uint32_t inline bcm2835_peri_read(volatile uint32_t* paddr)
+uint32_t bcm2835_peri_read(volatile uint32_t* paddr)
 {
     if (debug)
     {
@@ -72,7 +72,7 @@ uint32_t inline bcm2835_peri_read(volatile uint32_t* paddr)
 }
 
 // read from peripheral without the read barrier
-uint32_t inline bcm2835_peri_read_nb(volatile uint32_t* paddr)
+uint32_t bcm2835_peri_read_nb(volatile uint32_t* paddr)
 {
     if (debug)
     {
@@ -86,7 +86,7 @@ uint32_t inline bcm2835_peri_read_nb(volatile uint32_t* paddr)
 }
 
 // safe write to peripheral
-void inline bcm2835_peri_write(volatile uint32_t* paddr, uint32_t value)
+void bcm2835_peri_write(volatile uint32_t* paddr, uint32_t value)
 {
     if (debug)
     {
@@ -102,7 +102,7 @@ void inline bcm2835_peri_write(volatile uint32_t* paddr, uint32_t value)
 }
 
 // write to peripheral without the write barrier
-void inline bcm2835_peri_write_nb(volatile uint32_t* paddr, uint32_t value)
+void bcm2835_peri_write_nb(volatile uint32_t* paddr, uint32_t value)
 {
     if (debug)
     {

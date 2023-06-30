@@ -22,7 +22,7 @@
 /// BCM 2835).
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.18.tar.gz
+/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.19.tar.gz
 /// You can find the latest version at http://www.open.com.au/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -213,6 +213,8 @@
 /// \version 1.18 Added bcm2835_i2c_* functions. Changes to bcm2835_delayMicroseconds: 
 ///               now uses the RPi system timer counter, instead of clock_gettime, for improved accuracy. 
 ///               No need to link with -lrt now. Contributed by Arjan van Vught.
+/// \version 1.19 Removed inlines added by previous patch since they done seem to work everywhere. Reported by olly.
+///
 /// \author  Mike McCauley (mikem@airspayce.com)
 
 
@@ -677,7 +679,7 @@ extern "C" {
     /// \param[in] paddr Physical address to read from. See BCM2835_GPIO_BASE etc.
     /// \return the value read from the 32 bit register
     /// \sa Physical Addresses
-    extern uint32_t inline bcm2835_peri_read(volatile uint32_t* paddr);
+    extern uint32_t bcm2835_peri_read(volatile uint32_t* paddr);
 
 
     /// Reads 32 bit value from a peripheral address without the read barrier
@@ -686,7 +688,7 @@ extern "C" {
     /// \param[in] paddr Physical address to read from. See BCM2835_GPIO_BASE etc.
     /// \return the value read from the 32 bit register
     /// \sa Physical Addresses
-    extern uint32_t inline bcm2835_peri_read_nb(volatile uint32_t* paddr);
+    extern uint32_t bcm2835_peri_read_nb(volatile uint32_t* paddr);
 
 
     /// Writes 32 bit value from a peripheral address
@@ -695,7 +697,7 @@ extern "C" {
     /// \param[in] paddr Physical address to read from. See BCM2835_GPIO_BASE etc.
     /// \param[in] value The 32 bit value to write
     /// \sa Physical Addresses
-    extern void inline bcm2835_peri_write(volatile uint32_t* paddr, uint32_t value);
+    extern void bcm2835_peri_write(volatile uint32_t* paddr, uint32_t value);
 
     /// Writes 32 bit value from a peripheral address without the write barrier
     /// You should only use this when your code has previously called bcm2835_peri_write()
@@ -703,7 +705,7 @@ extern "C" {
     /// \param[in] paddr Physical address to read from. See BCM2835_GPIO_BASE etc.
     /// \param[in] value The 32 bit value to write
     /// \sa Physical Addresses
-    extern void inline bcm2835_peri_write_nb(volatile uint32_t* paddr, uint32_t value);
+    extern void bcm2835_peri_write_nb(volatile uint32_t* paddr, uint32_t value);
 
     /// Alters a number of bits in a 32 peripheral regsiter.
     /// It reads the current valu and then alters the bits deines as 1 in mask, 
