@@ -5,7 +5,7 @@
 //
 // Author: Mike McCauley
 // Copyright (C) 2011-2013 Mike McCauley
-// $Id: bcm2835.c,v 1.22 2015/03/28 05:27:32 mikem Exp mikem $
+// $Id: bcm2835.c,v 1.23 2015/03/31 04:55:41 mikem Exp mikem $
 */
 
 
@@ -1303,8 +1303,8 @@ int bcm2835_init(void)
 	return 1; /* Success */
     }
 
-    /* Figure out the base and size of the peripheral address block, based on whether we are on a RPI2 or not,
-    // using the device-tree
+    /* Figure out the base and size of the peripheral address block
+    // using the device-tree. Required for RPi2, optional for RPi 1
     */
     if ((fp = fopen(BMC2835_RPI2_DT_FILENAME , "rb")))
     {
