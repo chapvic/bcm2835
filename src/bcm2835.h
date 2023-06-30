@@ -4,7 +4,7 @@
   
    Author: Mike McCauley
    Copyright (C) 2011-2013 Mike McCauley
-   $Id: bcm2835.h,v 1.17 2015/03/08 08:09:07 mikem Exp mikem $
+   $Id: bcm2835.h,v 1.18 2015/03/08 22:17:20 mikem Exp $
 */
 
 /*! \mainpage C library for Broadcom BCM 2835 as used in Raspberry Pi
@@ -23,19 +23,19 @@
   BCM 2835).
   
   The version of the package that this documentation refers to can be downloaded 
-  from http:  www.airspayce.com/mikem/bcm2835/bcm2835-1.40.tar.gz
-  You can find the latest version at http:  www.airspayce.com/mikem/bcm2835
+  from http:  www.airspayce.com/mikem/bcm2835/bcm2835-1.41.tar.gz
+  You can find the latest version at http://www.airspayce.com/mikem/bcm2835
   
   Several example programs are provided.
   
-  Based on data in http:  elinux.org/RPi_Low-level_peripherals and 
-  http:  www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf
-  and http:  www.scribd.com/doc/101830961/GPIO-Pads-Control2
+  Based on data in http://elinux.org/RPi_Low-level_peripherals and 
+  http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf
+  and http://www.scribd.com/doc/101830961/GPIO-Pads-Control2
   
-  You can also find online help and discussion at http:  groups.google.com/group/bcm2835
+  You can also find online help and discussion at http://groups.google.com/group/bcm2835
   Please use that group for all questions and discussions on this topic. 
   Do not contact the author directly, unless it is to discuss commercial licensing.
-  Before asking a question or reporting a bug, please read http:  www.catb.org/esr/faqs/smart-questions.html
+  Before asking a question or reporting a bug, please read http://www.catb.org/esr/faqs/smart-questions.html
   
   Tested on debian6-19-04-2012, 2012-07-15-wheezy-raspbian, 2013-07-26-wheezy-raspbian
   and Occidentalisv01
@@ -92,7 +92,7 @@
   \par Pin Numbering
   
   The GPIO pin numbering as used by RPi is different to and inconsistent with the underlying 
-  BCM 2835 chip pin numbering. http:  elinux.org/RPi_BCM2835_GPIOs
+  BCM 2835 chip pin numbering. http://elinux.org/RPi_BCM2835_GPIOs
    
   RPi has a 26 pin IDE header that provides access to some of the GPIO pins on the BCM 2835,
   as well as power and ground pins. Not all GPIO pins on the BCM 2835 are available on the 
@@ -108,7 +108,7 @@
    
   The bcm2835_spi_* functions allow you to control the BCM 2835 SPI0 interface, 
   allowing you to send and received data by SPI (Serial Peripheral Interface).
-  For more information about SPI, see http:  en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus
+  For more information about SPI, see http://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus
   
   When bcm2835_spi_begin() is called it changes the bahaviour of the SPI interface pins from their 
   default GPIO behaviour in order to support SPI. While SPI is in use, you will not be able 
@@ -128,7 +128,7 @@
   
   The bcm2835_i2c_* functions allow you to control the BCM 2835 BSC interface,
   allowing you to send and received data by I2C ("eye-squared cee"; generically referred to as "two-wire interface") .
-  For more information about I?C, see http:  en.wikipedia.org/wiki/I%C2%B2C
+  For more information about I?C, see http://en.wikipedia.org/wiki/I%C2%B2C
   
   The Raspberry Pi V2 GPIO pins used for I2C are:
   
@@ -203,13 +203,13 @@
   \par Bindings to other languages
   
   mikem has made Perl bindings available at CPAN:
-  http:  search.cpan.org/~mikem/Device-BCM2835-1.9/lib/Device/BCM2835.pm
+  http://search.cpan.org/~mikem/Device-BCM2835-1.9/lib/Device/BCM2835.pm
   Matthew Baker has kindly made Python bindings available at:
   https:  github.com/mubeta06/py-libbcm2835
   Gary Marks has created a Serial Peripheral Interface (SPI) command-line utility 
   for Raspberry Pi, based on the bcm2835 library. The 
-  utility, spincl, is licensed under Open Source GNU GPLv3 by iP Solutions (http:  ipsolutionscorp.com), as a 
-  free download with source included: http:  ipsolutionscorp.com/raspberry-pi-spi-utility/
+  utility, spincl, is licensed under Open Source GNU GPLv3 by iP Solutions (http://ipsolutionscorp.com), as a 
+  free download with source included: http://ipsolutionscorp.com/raspberry-pi-spi-utility/
   
   \par Open Source Licensing GPL V2
   
@@ -218,7 +218,7 @@
   the right to share who uses it. If you wish to use this software under Open
   Source Licensing, you must contribute all your source code to the open source
   community in accordance with the GPL Version 2 when your application is
-  distributed. See http:  www.gnu.org/copyleft/gpl.html and COPYING
+  distributed. See http://www.gnu.org/copyleft/gpl.html and COPYING
   
   \par Acknowledgements
   
@@ -263,7 +263,7 @@
   I've added some unsigned casts to the debug prints to silence compiler
   warnings I was getting, fixed some typos, and changed the value of
   BCM2835_PAD_HYSTERESIS_ENABLED to 0x08 as per Gert van Loo's doc at
-  http:  www.scribd.com/doc/101830961/GPIO-Pads-Control2
+  http://www.scribd.com/doc/101830961/GPIO-Pads-Control2
   Also added a define for the passwrd value that Gert says is needed to
   change pad control settings.
 
@@ -366,6 +366,10 @@
   Fixed a problem where calling bcm2835_delayMicroseconds loops forever when debug is set. Reported by tlhackque.<br>
   Reinstated use of volatile in 2 functions where there was a danger of lost reads or writes. Reported by tlhackque.<br>
   
+  \version 14.1 Added BCM2835_VERSION macro and new function bcm2835_version(); Requested by tlhackque.<br>
+  Improvements to peripheral memory barriers as suggested by tlhackque.<br>
+  Reinstated some necessary volatile declarations as requested by tlhackque.<br>
+
   \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 */
 
@@ -375,6 +379,18 @@
 #define BCM2835_H
 
 #include <stdint.h>
+
+#define BCM2835_VERSION 10041 /* Version 1.41 */
+
+/* RPi 2 is ARM v7, and has DMB instruction.
+   Older RPis are ARM v6 and don't, so a coprocessor instruction must be used.
+   The odd test is so any newer processors will use DMB.  I'm not sure, but assumed
+   that __ARM_ARCH_7_ implies __ARM_ARCH_6__.  So the test is:
+   if not a V6 machine (all RPis before RPi 2), use DMB.
+*/
+#if !( defined(__ARM_ARCH_6__) && !defined( __ARM_ARCH_7__ ) )
+#define BCM2835_HAVE_DMB
+#endif
 
 /*! \defgroup constants Constants for passing to and from library functions
   The values here are designed to be passed to various functions in the bcm2835 library.
@@ -436,42 +452,42 @@ extern uint32_t *bcm2835_peripherals;
 /*! Base of the ST (System Timer) registers.
   Available after bcm2835_init has been called
 */
-extern uint32_t *bcm2835_st;
+extern volatile uint32_t *bcm2835_st;
 
 /*! Base of the GPIO registers.
   Available after bcm2835_init has been called
 */
-extern uint32_t *bcm2835_gpio;
+extern volatile uint32_t *bcm2835_gpio;
 
 /*! Base of the PWM registers.
   Available after bcm2835_init has been called
 */
-extern uint32_t *bcm2835_pwm;
+extern volatile uint32_t *bcm2835_pwm;
 
 /*! Base of the CLK registers.
   Available after bcm2835_init has been called
 */
-extern uint32_t *bcm2835_clk;
+extern volatile uint32_t *bcm2835_clk;
 
 /*! Base of the PADS registers.
   Available after bcm2835_init has been called
 */
-extern uint32_t *bcm2835_pads;
+extern volatile uint32_t *bcm2835_pads;
 
 /*! Base of the SPI0 registers.
   Available after bcm2835_init has been called
 */
-extern uint32_t *bcm2835_spi0;
+extern volatile uint32_t *bcm2835_spi0;
 
 /*! Base of the BSC0 registers.
   Available after bcm2835_init has been called
 */
-extern uint32_t *bcm2835_bsc0;
+extern volatile uint32_t *bcm2835_bsc0;
 
 /*! Base of the BSC1 registers.
   Available after bcm2835_init has been called
 */
-extern uint32_t *bcm2835_bsc1;
+extern volatile uint32_t *bcm2835_bsc1;
 
 /*! \brief bcm2835RegisterBase
   Register bases for bcm2835_regbase()
@@ -943,6 +959,11 @@ extern "C" {
     */
     extern void  bcm2835_set_debug(uint8_t debug);
 
+    /*! Returns the version number of the library, same as BCM2835_VERSION
+       \return the current library version number
+    */
+    extern unsigned int bcm2835_version(void);
+
     /*! @} */
 
     /*! \defgroup lowlevel Low level register access
@@ -960,56 +981,98 @@ extern "C" {
     */
     extern uint32_t* bcm2835_regbase(uint8_t regbase);
 
-    /*! Reads 32 bit value from a peripheral address
-      The read is done twice, and is therefore always safe in terms of 
-      manual section 1.3 Peripheral access precautions for correct memory ordering
+    /*! Generate a memory barrier instruction
+      This is used to ensure correct memory ordering when accessing peripherals.
+      It must be called from an interrupt service routine:
+       o If the ISR reads any peripheral register, at the start of the ISR
+       o If the ISR writes any peripheral register, at the end of the ISR
+       o If both, both places!
+       A memory barrier must also be used when switching a stream of reads and
+       writes from one peripheral to aother.  This can be done explicitly, or
+       by using the barrier forms of bcm2835_peri_read and write.
+    */
+
+    /*! Impose a memory barrier for peripheral access.
+      Inlined for fast access.
+      Note that this expands to 1 instruction (ARM V7), or ~ 4 (max) on older (save reg 10, load
+      reg 10, write to CP and restore R10).  Often R10 won't need to be saved...
+     */
+    extern __inline__  __attribute__((always_inline)) void bcm2835_memory_barrier( void ) {
+#ifdef __arm__
+ #ifdef BCM2835_HAVE_DMB
+	__asm__( "dmb" : : : "memory" );
+ #else
+	__asm__(              "\
+  mov r10,#0                 \n\
+  mcr p15,0,r10, c7, c10, 5  \n\
+  " : : : "r10", "memory" );
+ #endif
+#endif
+    }
+
+    /*! Reads 32 bit value from a peripheral address WITH a memory barrier before and after each read.
+      This is safe, but slow.  The MB before protects this read from any in-flight reads that didn't
+      use a MB.  The MB after protects subsequent reads from another peripheral.
+
       \param[in] paddr Physical address to read from. See BCM2835_GPIO_BASE etc.
       \return the value read from the 32 bit register
       \sa Physical Addresses
     */
-    extern uint32_t bcm2835_peri_read(uint32_t* paddr);
+    extern uint32_t bcm2835_peri_read(volatile uint32_t* paddr);
 
-    /*! Reads 32 bit value from a peripheral address without the read barrier
-      You should only use this when your code has previously called bcm2835_peri_read()
-      within the same peripheral, and no other peripheral access has occurred since.
+    /*! Reads 32 bit value from a peripheral address WITHOUT the read barriers
+      You should only use this when:
+      o your code has previously called bcm2835_peri_read() for a register
+      within the same peripheral, and no read or write to another peripheral has occurred since.
+      o your code has called bcm2835_memory_barrier() since the last access to ANOTHER peripheral.
+
       \param[in] paddr Physical address to read from. See BCM2835_GPIO_BASE etc.
       \return the value read from the 32 bit register
       \sa Physical Addresses
     */
-    extern uint32_t bcm2835_peri_read_nb(uint32_t* paddr);
+    extern uint32_t bcm2835_peri_read_nb(volatile uint32_t* paddr);
 
 
-    /*! Writes 32 bit value from a peripheral address
-      The write is done twice, and is therefore always safe in terms of 
-      manual section 1.3 Peripheral access precautions for correct memory ordering
+    /*! Writes 32 bit value from a peripheral address WITH a memory barrier before and after each write
+      This is safe, but slow.  The MB before ensures that any in-flight write to another peripheral
+      completes before this write is issued.  The MB after ensures that subsequent reads and writes
+      to another peripheral will see the effect of this write.
+
+      This is a tricky optimization; if you aren't sure, use the barrier version.
+
       \param[in] paddr Physical address to read from. See BCM2835_GPIO_BASE etc.
       \param[in] value The 32 bit value to write
       \sa Physical Addresses
     */
-    extern void bcm2835_peri_write(uint32_t* paddr, uint32_t value);
+    extern void bcm2835_peri_write(volatile uint32_t* paddr, uint32_t value);
 
     /*! Writes 32 bit value from a peripheral address without the write barrier
-      You should only use this when your code has previously called bcm2835_peri_write()
+      You should only use this when:
+      o your code has previously called bcm2835_peri_write() for a register
       within the same peripheral, and no other peripheral access has occurred since.
+      o your code has called bcm2835_memory_barrier() since the last access to ANOTHER peripheral.
+
+      This is a tricky optimization; if you aren't sure, use the barrier version.
+
       \param[in] paddr Physical address to read from. See BCM2835_GPIO_BASE etc.
       \param[in] value The 32 bit value to write
       \sa Physical Addresses
     */
-    extern void bcm2835_peri_write_nb(uint32_t* paddr, uint32_t value);
+    extern void bcm2835_peri_write_nb(volatile uint32_t* paddr, uint32_t value);
 
     /*! Alters a number of bits in a 32 peripheral regsiter.
-      It reads the current valu and then alters the bits deines as 1 in mask, 
+      It reads the current valu and then alters the bits defines as 1 in mask, 
       according to the bit value in value. 
       All other bits that are 0 in the mask are unaffected.
       Use this to alter a subset of the bits in a register.
-      The write is done twice, and is therefore always safe in terms of 
-      manual section 1.3 Peripheral access precautions for correct memory ordering
+      Memory barriers are used.  Note that this is not atomic; an interrupt
+      routine can cause unexpected results.
       \param[in] paddr Physical address to read from. See BCM2835_GPIO_BASE etc.
       \param[in] value The 32 bit value to write, masked in by mask.
       \param[in] mask Bitmask that defines the bits that will be altered in the register.
       \sa Physical Addresses
     */
-    extern void bcm2835_peri_set_bits(uint32_t* paddr, uint32_t value, uint32_t mask);
+    extern void bcm2835_peri_set_bits(volatile uint32_t* paddr, uint32_t value, uint32_t mask);
     /*! @}    end of lowlevel */
 
     /*! \defgroup gpio GPIO register access
