@@ -23,7 +23,7 @@
   BCM 2835).
   
   The version of the package that this documentation refers to can be downloaded 
-  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.48.tar.gz
+  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.49.tar.gz
   You can find the latest version at http://www.airspayce.com/mikem/bcm2835
   
   Several example programs are provided.
@@ -421,6 +421,9 @@
   Added patch from Eckhardt Ulrich that fixed problems that could cause hanging with bcm2835_i2c_read_register_rs
   and others.
 
+  \version 1.49 2016-01-05
+  Added patch from Jonathan Perkin with new functions bcm2835_gpio_eds_multi() and bcm2835_gpio_set_eds_multi().
+
   \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 */
 
@@ -431,7 +434,7 @@
 
 #include <stdint.h>
 
-#define BCM2835_VERSION 10048 /* Version 1.48 */
+#define BCM2835_VERSION 10049 /* Version 1.49 */
 
 /* RPi 2 is ARM v7, and has DMB instruction for memory barriers.
    Older RPis are ARM v6 and don't, so a coprocessor instruction must be used instead.
@@ -552,7 +555,7 @@ typedef enum
     BCM2835_REGBASE_PWM  = 3, /*!< Base of the PWM registers. */
     BCM2835_REGBASE_CLK  = 4, /*!< Base of the CLK registers. */
     BCM2835_REGBASE_PADS = 5, /*!< Base of the PADS registers. */
-    BCM2835_REGBASE_SPI0 = 6, /*! Base of the SPI0 registers. */
+    BCM2835_REGBASE_SPI0 = 6, /*!< Base of the SPI0 registers. */
     BCM2835_REGBASE_BSC0 = 7, /*!< Base of the BSC0 registers. */
     BCM2835_REGBASE_BSC1 = 8  /*!< Base of the BSC1 registers. */
 } bcm2835RegisterBase;
@@ -1167,6 +1170,13 @@ extern "C" {
     */
     extern uint8_t bcm2835_gpio_eds(uint8_t pin);
 
+    /*! Same as bcm2835_gpio_eds() but checks if any of the pins specified in
+      the mask have detected a level or edge.
+      \param[in] mask Mask of pins to check. Use eg: (1 << RPI_GPIO_P1_03) | (1 << RPI_GPIO_P1_05)
+      \return Mask of pins HIGH if the event detect status for the given pin is true.
+    */
+    extern uint32_t bcm2835_gpio_eds_multi(uint32_t mask);
+
     /*! Sets the Event Detect Status register for a given pin to 1, 
       which has the effect of clearing the flag. Use this afer seeing
       an Event Detect Status on the pin.
@@ -1174,6 +1184,12 @@ extern "C" {
     */
     extern void bcm2835_gpio_set_eds(uint8_t pin);
 
+    /*! Same as bcm2835_gpio_set_eds() but clears the flag for any pin which
+      is set in the mask.
+      \param[in] mask Mask of pins to clear. Use eg: (1 << RPI_GPIO_P1_03) | (1 << RPI_GPIO_P1_05)
+    */
+    extern void bcm2835_gpio_set_eds_multi(uint32_t mask);
+    
     /*! Enable Rising Edge Detect Enable for the specified pin.
       When a rising edge is detected, sets the appropriate pin in Event Detect Status.
       The GPRENn registers use
