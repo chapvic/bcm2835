@@ -26,7 +26,7 @@
   BCM 2835).
   
   The version of the package that this documentation refers to can be downloaded 
-  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.61.tar.gz
+  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.62.tar.gz
   You can find the latest version at http://www.airspayce.com/mikem/bcm2835
   
   Several example programs are provided.
@@ -548,6 +548,9 @@
   default via -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64.  The offset was
   being incorrectly converted, this way is clearer and fixes the problem. Contributed by Jonathan Perkin.
 
+  \version 1.62 2020-01-12
+  Fixed a problem that could cause compile failures with size_t and off_t
+
   \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 */
 
@@ -558,7 +561,7 @@
 
 #include <stdint.h>
 
-#define BCM2835_VERSION 10061 /* Version 1.61 */
+#define BCM2835_VERSION 10062 /* Version 1.62 */
 
 /* RPi 2 is ARM v7, and has DMB instruction for memory barriers.
    Older RPis are ARM v6 and don't, so a coprocessor instruction must be used instead.
@@ -632,6 +635,7 @@
 /*! Base Address of the BSC1 registers */
 #define BCM2835_BSC1_BASE				0x804000
 
+#include <stdlib.h>
 
 /*! Physical address and size of the peripherals block
   May be overridden on RPi2
