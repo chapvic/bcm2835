@@ -5,7 +5,7 @@
 //
 // Author: Mike McCauley
 // Copyright (C) 2011-2013 Mike McCauley
-// $Id: bcm2835.c,v 1.25 2018/01/16 21:55:07 mikem Exp mikem $
+// $Id: bcm2835.c,v 1.26 2018/08/27 20:45:57 mikem Exp mikem $
 */
 
 
@@ -637,6 +637,13 @@ void bcm2835_spi_setClockDivider(uint16_t divider)
     bcm2835_peri_write(paddr, divider);
 }
 
+void bcm2835_spi_set_speed_hz(uint32_t speed_hz)
+{
+	uint16_t divider = (uint16_t) ((uint32_t) BCM2835_CORE_CLK_HZ / speed_hz);
+	divider &= 0xFFFE;
+	bcm2835_spi_setClockDivider(divider);
+}
+
 void bcm2835_spi_setDataMode(uint8_t mode)
 {
     volatile uint32_t* paddr = bcm2835_spi0 + BCM2835_SPI0_CS/4;
@@ -790,7 +797,8 @@ void bcm2835_spi_setChipSelectPolarity(uint8_t cs, uint8_t active)
     bcm2835_peri_set_bits(paddr, active << shift, 1 << shift);
 }
 
-void bcm2835_spi_write(uint16_t data) {
+void bcm2835_spi_write(uint16_t data)
+{
 #if 0
 	char buf[2];
 
@@ -826,7 +834,8 @@ void bcm2835_spi_write(uint16_t data) {
 #endif
 }
 
-int bcm2835_aux_spi_begin(void) {
+int bcm2835_aux_spi_begin(void)
+{
     volatile uint32_t* enable = bcm2835_aux + BCM2835_AUX_ENABLE/4;
     volatile uint32_t* cntl0 = bcm2835_spi1 + BCM2835_AUX_SPI_CNTL0/4;
     volatile uint32_t* cntl1 = bcm2835_spi1 + BCM2835_AUX_SPI_CNTL1/4;
@@ -849,7 +858,8 @@ int bcm2835_aux_spi_begin(void) {
     return 1; /* OK */
 }
 
-void bcm2835_aux_spi_end(void) {
+void bcm2835_aux_spi_end(void)
+{
 	/* Set all the SPI1 pins back to input */
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_36, BCM2835_GPIO_FSEL_INPT);	/* SPI1_CE2_N */
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_35, BCM2835_GPIO_FSEL_INPT);	/* SPI1_MISO */
@@ -859,7 +869,8 @@ void bcm2835_aux_spi_end(void) {
 
 #define DIV_ROUND_UP(n,d)	(((n) + (d) - 1) / (d))
 
-uint16_t bcm2835_aux_spi_CalcClockDivider(uint32_t speed_hz) {
+uint16_t bcm2835_aux_spi_CalcClockDivider(uint32_t speed_hz)
+{
 	uint16_t divider;
 
 	if (speed_hz < (uint32_t) BCM2835_AUX_SPI_CLOCK_MIN) {
@@ -879,11 +890,13 @@ uint16_t bcm2835_aux_spi_CalcClockDivider(uint32_t speed_hz) {
 
 static uint32_t spi1_speed;
 
-void bcm2835_aux_spi_setClockDivider(uint16_t divider) {
+void bcm2835_aux_spi_setClockDivider(uint16_t divider)
+{
 		spi1_speed = (uint32_t) divider;
 }
 
-void bcm2835_aux_spi_write(uint16_t data) {
+void bcm2835_aux_spi_write(uint16_t data)
+{
     volatile uint32_t* cntl0 = bcm2835_spi1 + BCM2835_AUX_SPI_CNTL0/4;
     volatile uint32_t* cntl1 = bcm2835_spi1 + BCM2835_AUX_SPI_CNTL1/4;
     volatile uint32_t* stat = bcm2835_spi1 + BCM2835_AUX_SPI_STAT/4;
