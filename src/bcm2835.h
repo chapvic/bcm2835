@@ -591,6 +591,10 @@
   Added support for use of capability  cap_sys_rawio to determine if access to /dev/mem is available for non-root
   users. Contributed by Doug McFadyen.
 
+  \version 1.67, 1.66 2020-06-11
+  Fixed an error in bcm2835_i2c_read() where the status byte was not correctly updated with BCM2835_BSC_S_DONE
+  Reported by Zihan. Thanks.
+
   \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 */
 
@@ -1128,7 +1132,7 @@ typedef enum
    GPIO register offsets from BCM2835_BSC*_BASE.
    Offsets into the BSC Peripheral block in bytes per 3.1 BSC Register Map
 */
-#define BCM2835_BSC_C 							0x0000 /*!< BSC Master Control */
+#define BCM2835_BSC_C 			0x0000 /*!< BSC Master Control */
 #define BCM2835_BSC_S 			0x0004 /*!< BSC Master Status */
 #define BCM2835_BSC_DLEN		0x0008 /*!< BSC Master Data Length */
 #define BCM2835_BSC_A 			0x000c /*!< BSC Master Slave Address */

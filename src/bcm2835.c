@@ -1422,7 +1422,7 @@ uint8_t bcm2835_i2c_read(char* buf, uint32_t len)
 	reason = BCM2835_I2C_REASON_ERROR_DATA;
     }
 
-    bcm2835_peri_set_bits(control, BCM2835_BSC_S_DONE , BCM2835_BSC_S_DONE);
+    bcm2835_peri_set_bits(status, BCM2835_BSC_S_DONE , BCM2835_BSC_S_DONE);
 
     return reason;
 }
