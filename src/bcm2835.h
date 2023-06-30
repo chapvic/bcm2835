@@ -22,7 +22,7 @@
 /// BCM 2835).
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.35.tar.gz
+/// from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.36.tar.gz
 /// You can find the latest version at http://www.airspayce.com/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -302,6 +302,9 @@
 /// \version 1.34 Added bcm2835_i2c_write_read_rs() which writes an arbitrary number of bytes, 
 ///               sends a repeat start, and reads from the device. Contributed by Eduardo Steinhorst.
 /// \version 1.35 Fix build errors when compiled under Qt. Also performance improvements with SPI transfers. Contributed by Udo Klaas.
+/// \version 1.36 Make automake's test runner detect that we're skipping tests when not root, the second
+///               one makes us skip the test when using fakeroot (as used when building
+///               Debian packages). Contributed by Guido Günther.
 ///
 /// \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 
@@ -1231,31 +1234,31 @@ extern "C" {
     /// documentation on the Main Page.
     /// @{
 
-  /// Sets the PWM clock divisor, 
-  /// to control the basic PWM pulse widths.
-  /// \param[in] divisor Divides the basic 19.2MHz PWM clock. You can use one of the common
-  /// values BCM2835_PWM_CLOCK_DIVIDER_* in \ref bcm2835PWMClockDivider.
-  extern void bcm2835_pwm_set_clock(uint32_t divisor);
+    /// Sets the PWM clock divisor, 
+    /// to control the basic PWM pulse widths.
+    /// \param[in] divisor Divides the basic 19.2MHz PWM clock. You can use one of the common
+    /// values BCM2835_PWM_CLOCK_DIVIDER_* in \ref bcm2835PWMClockDivider
+    extern void bcm2835_pwm_set_clock(uint32_t divisor);
+    
+    /// Sets the mode of the given PWM channel,
+    /// allowing you to control the PWM mode and enable/disable that channel
+    /// \param[in] channel The PWM channel. 0 or 1.
+    /// \param[in] markspace Set true if you want Mark-Space mode. 0 for Balanced mode.
+    /// \param[in] enabled Set true to enable this channel and produce PWM pulses.
+    extern void bcm2835_pwm_set_mode(uint8_t channel, uint8_t markspace, uint8_t enabled);
 
-  /// Sets the mode of the given PWM channel,
-  /// allowing you to control the PWM mode and enable/disable that channel
-  /// \param[in] channel The PWM channel. 0 or 1.
-  /// \param[in] markspace Set true if you want Mark-Space mode. 0 for Balanced mode.
-  /// \param[in] enabled Set true to enable this channel and produce PWM pulses.
-  extern void bcm2835_pwm_set_mode(uint8_t channel, uint8_t markspace, uint8_t enabled);
-
-  /// Sets the maximum range of the PWM output.
-  /// The data value can vary between 0 and this range to control PWM output
-  /// \param[in] channel The PWM channel. 0 or 1.
-  /// \param[in] range The maximum value permitted for DATA.
-  extern void bcm2835_pwm_set_range(uint8_t channel, uint32_t range);
-
-  /// Sets the PWM pulse ratio to emit to DATA/RANGE, 
-  /// where RANGE is set by bcm2835_pwm_set_range().
-  /// \param[in] channel The PWM channel. 0 or 1.
-  /// \param[in] data Controls the PWM output ratio as a fraction of the range. 
-  ///  Can vary from 0 to RANGE.
-  extern void bcm2835_pwm_set_data(uint8_t channel, uint32_t data);
+    /// Sets the maximum range of the PWM output.
+    /// The data value can vary between 0 and this range to control PWM output
+    /// \param[in] channel The PWM channel. 0 or 1.
+    /// \param[in] range The maximum value permitted for DATA.
+    extern void bcm2835_pwm_set_range(uint8_t channel, uint32_t range);
+    
+    /// Sets the PWM pulse ratio to emit to DATA/RANGE, 
+    /// where RANGE is set by bcm2835_pwm_set_range().
+    /// \param[in] channel The PWM channel. 0 or 1.
+    /// \param[in] data Controls the PWM output ratio as a fraction of the range. 
+    ///  Can vary from 0 to RANGE.
+    extern void bcm2835_pwm_set_data(uint8_t channel, uint32_t data);
 
     /// @} 
 #ifdef __cplusplus

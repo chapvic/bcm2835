@@ -9,10 +9,11 @@
 
 #include <bcm2835.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 int main(int argc, char **argv)
 {
-    if (geteuid() == 0)
+    if (geteuid() == 0 && !getenv("FAKEROOTKEY"))
     {
 	if (!bcm2835_init())
 	    return 1;
@@ -22,6 +23,7 @@ int main(int argc, char **argv)
     else
     {
 	fprintf(stderr, "****You need to be root to properly run this test program\n");
+	return 1;
     }
     return 0;
 }
