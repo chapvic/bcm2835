@@ -1861,7 +1861,7 @@ int bcm2835_init(void)
     memfd = -1;
     ok = 0;
     if (geteuid() == 0
-#ifdef BCM2835_HAVE_LIBCAP2
+#ifdef BCM2835_HAVE_LIBCAP
 	|| bcm2835_has_capability(CAP_SYS_RAWIO)
 #endif
 	)

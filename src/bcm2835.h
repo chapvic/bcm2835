@@ -83,6 +83,22 @@
   \code
   sudo setcap cap_sys_rawio+ep *myprogname*
   \endcode
+  You also need to do these steps on the host once, to support libcap and not-root read/write access 
+  to /dev/mem:
+  1. Install libcap support
+  \code
+    sudo apt-get install libcap2 libcap-dev
+  2. Add current user to kmem group
+  \code
+    sudo adduser $USER kmem
+  \endcode
+  3. Allow write access to /dev/mem by members of kmem group
+  \code
+    echo 'SUBSYSTEM=="mem", KERNEL=="mem", GROUP="kmem", MODE="0660"' | sudo tee /etc/udev/rules.d/98-mem.rules
+  \endcode
+  \code
+    sudo reboot
+  \endcode
 
   \par Installation
   
@@ -571,6 +587,10 @@
   Fixed error in definitions of BCM2835_AUX_SPI_STAT_TX_LVL and BCM2835_AUX_SPI_STAT_RX_LVL. Patch from 
   Eric Marzec. Thanks.
 
+  \version 1.65, 1.66 2020-04-16
+  Added support for use of capability  cap_sys_rawio to determine if access to /dev/mem is available for non-root
+  users. Contributed by Doug McFadyen.
+
   \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 */
 
@@ -581,10 +601,11 @@
 
 #include <stdint.h>
 
-#define BCM2835_VERSION 10064 /* Version 1.64 */
+#define BCM2835_VERSION 10066 /* Version 1.66 */
 
 // Define this if you want to use libcap2 to determine if you have the cap_sys_rawio capability
-// and therefore the capability of openeing /dev/mem, even if you are not root
+// and therefore the capability of opening /dev/mem, even if you are not root.
+// See the comments above in the documentation for 'Running As Root'
 //#define BCM2835_HAVE_LIBCAP
 
 /* RPi 2 is ARM v7, and has DMB instruction for memory barriers.
