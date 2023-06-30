@@ -150,6 +150,12 @@
 ///              http://www.scribd.com/doc/101830961/GPIO-Pads-Control2
 ///              Also added a define for the passwrd value that Gert says is needed to
 ///              change pad control settings.
+/// \version 1.10 Changed the names of the delay functions to bcm2835_delay() 
+///              and bcm2835_delayMicroseconds() to prevent collisions with wiringPi.
+///              Macros to map delay()-> bcm2835_delay() and
+///              Macros to map delayMicroseconds()-> bcm2835_delayMicroseconds(), which
+///              can be disabled by defining BCM2835_NO_DELAY_COMPATIBILITY
+///              
 ///
 /// \author  Mike McCauley (mikem@open.com.au)
 
@@ -426,6 +432,12 @@ typedef enum
 #define BCM2835_PWM0_SERIAL     0x0002  /// Run in serial mode
 #define BCM2835_PWM0_ENABLE     0x0001  /// Channel Enable
 
+// Historical name compatibility
+#ifndef BCM2835_NO_DELAY_COMPATIBILITY
+#define delay(x) bcm2835_delay(x)
+#define delayMicroseconds(x) bcm2835_delayMicroseconds(x)
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -650,7 +662,7 @@ extern "C" {
     /// Delays for the specified number of milliseconds.
     /// Uses nanosleep(), and therefore does not use CPU until the time is up.
     /// \param[in] millis Delay in milliseconds
-    extern void delay (unsigned int millis);
+    extern void bcm2835_delay (unsigned int millis);
 
     /// Delays for the specified number of microseconds.
     /// Uses nanosleep(), and therefore does not use CPU until the time is up.
@@ -664,7 +676,7 @@ extern "C" {
     /// It is reported that a delay of 0 microseconds on RaspberryPi will in fact
     /// result in a dleay of about 80 microseconds. Your mileage may vary.
     /// \param[in] micros Delay in microseconds
-    extern void delayMicroseconds (unsigned int micros);
+    extern void bcm2835_delayMicroseconds (unsigned int micros);
 
     /// Sets the output state of the specified pin
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.

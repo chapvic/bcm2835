@@ -40,13 +40,13 @@ int main(int argc, char **argv)
 	bcm2835_gpio_write(PIN, HIGH);
 	
 	// wait a bit
-	delay(500);
+	bcm2835_delay(500);
 	
 	// turn it off
 	bcm2835_gpio_write(PIN, LOW);
 	
 	// wait a bit
-	delay(500);
+	bcm2835_delay(500);
     }
 
     return 0;

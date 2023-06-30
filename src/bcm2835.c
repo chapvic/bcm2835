@@ -323,7 +323,7 @@ void bcm2835_gpio_set_pad(uint8_t group, uint32_t control)
 
 // Some convenient arduino like functions
 // milliseconds
-void delay(unsigned int millis)
+void bcm2835_delay(unsigned int millis)
 {
   struct timespec sleeper;
 
@@ -333,7 +333,7 @@ void delay(unsigned int millis)
 }
 
 // microseconds
-void delayMicroseconds(unsigned int micros)
+void bcm2835_delayMicroseconds(unsigned int micros)
 {
     struct timespec t0, t1;
     double t_us;
@@ -667,13 +667,13 @@ int main(int argc, char **argv)
 	bcm2835_gpio_write(RPI_GPIO_P1_11, HIGH);
 	
 	// wait a bit
-	delay(500);
+	bcm2835_delay(500);
 	
 	// turn it off
 	bcm2835_gpio_write(RPI_GPIO_P1_11, LOW);
 	
 	// wait a bit
-	delay(500);
+	bcm2835_delay(500);
     }
 #endif
 
@@ -686,7 +686,7 @@ int main(int argc, char **argv)
 	printf("read from pin 15: %d\n", value);
 	
 	// wait a bit
-	delay(500);
+	bcm2835_delay(500);
     }
 #endif
 
@@ -703,7 +703,7 @@ int main(int argc, char **argv)
 	}
 
 	// wait a bit
-	delay(500);
+	bcm2835_delay(500);
     }
 #endif
 

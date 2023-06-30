@@ -11,6 +11,12 @@
 
 int main(int argc, char **argv)
 {
+    // Check name compatibility
+    delay(100);
+    delayMicroseconds(100);
+    bcm2835_delay(100);
+    bcm2835_delayMicroseconds(100);
+
     if (geteuid() == 0)
     {
 	if (!bcm2835_init())
