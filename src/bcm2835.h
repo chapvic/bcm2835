@@ -23,7 +23,7 @@
   BCM 2835).
   
   The version of the package that this documentation refers to can be downloaded 
-  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.58.tar.gz
+  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.59.tar.gz
   You can find the latest version at http://www.airspayce.com/mikem/bcm2835
   
   Several example programs are provided.
@@ -285,6 +285,15 @@
   mlockall(MCL_CURRENT | MCL_FUTURE);
   \endcode
   
+  \par Crashing on some versions of Raspbian
+  Some people have reported that various versions of Rasbian will crash or hang 
+  if certain GPIO pins are toggled: https://github.com/raspberrypi/linux/issues/2550
+  when using bcm2835.
+  A workaround is to add this line to your /boot/config.txt:
+  \code
+    dtoverlay=gpio-no-irq
+  \endcode
+
   \par Bindings to other languages
   
   mikem has made Perl bindings available at CPAN:
@@ -521,6 +530,10 @@
   \version 1.58 2018-11-29
   Added examples/spiram, which shows how to use the included little library (spiram.c and spiram.h)
   to read and write SPI RAM chips such as 23K256-I/P
+
+  \version 1.59 2019-05-22
+  Fixed a bug in bcm2835_i2c_read reported by Charles Hayward where a noisy I2C line cold cause a seg fault by
+  reading too many characters.
   
   \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 */
@@ -532,7 +545,7 @@
 
 #include <stdint.h>
 
-#define BCM2835_VERSION 10058 /* Version 1.58 */
+#define BCM2835_VERSION 10059 /* Version 1.59 */
 
 /* RPi 2 is ARM v7, and has DMB instruction for memory barriers.
    Older RPis are ARM v6 and don't, so a coprocessor instruction must be used instead.
