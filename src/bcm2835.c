@@ -25,6 +25,7 @@ static volatile uint32_t *gpio = NULL;
 static volatile uint32_t *pwm  = NULL;
 static volatile uint32_t *clk  = NULL;
 static volatile uint32_t *pads = NULL;
+static volatile uint32_t *spi0 = NULL;
 
 // This define allows us to test on hardware other than RPi.
 // It prevents access to the kernel memory, and does not do any peripheral access
@@ -56,6 +57,18 @@ uint32_t bcm2835_peri_read(volatile uint32_t* paddr)
     }
 }
 
+// read from peripheral without the read barrier
+uint32_t bcm2835_peri_read_nb(volatile uint32_t* paddr)
+{
+    if (debug)
+    {
+	printf("bcm2835_peri_read_nb  paddr %08X\n", paddr);
+	return 0;
+    }
+    else
+	return *paddr;
+}
+
 // safe write to peripheral
 void bcm2835_peri_write(volatile uint32_t* paddr, uint32_t value)
 {
@@ -70,7 +83,16 @@ void bcm2835_peri_write(volatile uint32_t* paddr, uint32_t value)
     }
 }
 
-// Set only the bits covered by the mask
+// write to peripheral without the write barrier
+void bcm2835_peri_write_nb(volatile uint32_t* paddr, uint32_t value)
+{
+    if (debug)
+	printf("bcm2835_peri_write_nb paddr %08X, value %08X\n", paddr, value);
+    else
+	*paddr = value;
+}
+
+// Set/clear only the bits in value covered by the mask
 void bcm2835_peri_set_bits(volatile uint32_t* paddr, uint32_t value, uint32_t mask)
 {
     uint32_t v = bcm2835_peri_read(paddr);
@@ -294,6 +316,105 @@ void bcm2835_gpio_set_pud(uint8_t pin, uint8_t pud)
     bcm2835_gpio_pudclk(pin, 0);
 }
 
+void bcm2835_spi_begin()
+{
+  // Set the SPI0 pins to the Alt 0 function to enable SPI0 access on them
+  bcm2835_gpio_fsel(RPI_GPIO_P1_26, BCM2835_GPIO_FSEL_ALT0); // CE1
+  bcm2835_gpio_fsel(RPI_GPIO_P1_24, BCM2835_GPIO_FSEL_ALT0); // CE0
+  bcm2835_gpio_fsel(RPI_GPIO_P1_21, BCM2835_GPIO_FSEL_ALT0); // MISO
+  bcm2835_gpio_fsel(RPI_GPIO_P1_19, BCM2835_GPIO_FSEL_ALT0); // MOSI
+  bcm2835_gpio_fsel(RPI_GPIO_P1_23, BCM2835_GPIO_FSEL_ALT0); // CLK
+
+  // Set the SPI CS register to the some sensible defaults
+    volatile uint32_t* paddr = spi0 + BCM2835_SPI0_CS/4;
+    bcm2835_peri_write(paddr, 0); // All 0s
+
+  // Clear TX and RX fifos
+  bcm2835_peri_write_nb(paddr, BCM2835_SPI0_CS_CLEAR);
+}
+
+void bcm2835_spi_end()
+{  
+  // Set all the SPI0 pins back to input
+  bcm2835_gpio_fsel(RPI_GPIO_P1_26, BCM2835_GPIO_FSEL_INPT); // CE1
+  bcm2835_gpio_fsel(RPI_GPIO_P1_24, BCM2835_GPIO_FSEL_INPT); // CE0
+  bcm2835_gpio_fsel(RPI_GPIO_P1_21, BCM2835_GPIO_FSEL_INPT); // MISO
+  bcm2835_gpio_fsel(RPI_GPIO_P1_19, BCM2835_GPIO_FSEL_INPT); // MOSI
+  bcm2835_gpio_fsel(RPI_GPIO_P1_23, BCM2835_GPIO_FSEL_INPT); // CLK
+}
+
+void bcm2835_spi_setBitOrder(uint8_t order)
+{
+  // BCM2835_SPI_BIT_ORDER_MSBFIRST is the only one suported by SPI0
+}
+
+// defaults to 0, which means a divider of 65536.
+// The divisor must be a power of 2. Odd numbers
+// rounded down. The maximum SPI clock rate is
+// of the APB clock
+void bcm2835_spi_setClockDivider(uint16_t divider)
+{
+    volatile uint32_t* paddr = spi0 + BCM2835_SPI0_CLK/4;
+    bcm2835_peri_write(paddr, divider);
+}
+
+void bcm2835_spi_setDataMode(uint8_t mode)
+{
+    volatile uint32_t* paddr = spi0 + BCM2835_SPI0_CS/4;
+    // Mask in the CPO and CPHA bits of CS
+    bcm2835_peri_set_bits(paddr, mode << 2, BCM2835_SPI0_CS_CPOL | BCM2835_SPI0_CS_CPHA);
+}
+
+// Writes (and reads) a single byte to SPI
+uint8_t bcm2835_spi_transfer(uint8_t value)
+{
+    volatile uint32_t* paddr = spi0 + BCM2835_SPI0_CS/4;
+    volatile uint32_t* fifo = spi0 + BCM2835_SPI0_FIFO/4;
+
+  // This is Polled transfer as per section 10.6.1
+
+  // Clear TX and RX fifos
+   bcm2835_peri_write_nb(paddr, BCM2835_SPI0_CS_CLEAR);
+
+  // Set TA = 1
+  bcm2835_peri_set_bits(paddr, BCM2835_SPI0_CS_TA, BCM2835_SPI0_CS_TA);
+
+  // Maybe wait for TXD
+  while (!(bcm2835_peri_read(paddr) & BCM2835_SPI0_CS_TXD))
+    delayMicroseconds(10);
+
+  // Write to FIFO, no barrier else output 2 bytes
+  bcm2835_peri_write_nb(fifo, value);
+
+  // Wait for DONE to be set
+  while (!(bcm2835_peri_read_nb(paddr) & BCM2835_SPI0_CS_DONE))
+    delayMicroseconds(10);
+
+  // Read any byte that was sent back by the slave while we sere sending to it
+  uint32_t ret = bcm2835_peri_read_nb(fifo);
+
+  // Set TA = 0, and also set the barrier
+  bcm2835_peri_set_bits(paddr, 0, BCM2835_SPI0_CS_TA);
+
+  return ret;
+}
+
+void bcm2835_spi_chipSelect(uint8_t cs)
+{
+    volatile uint32_t* paddr = spi0 + BCM2835_SPI0_CS/4;
+    // Mask in the CS bits of CS
+    bcm2835_peri_set_bits(paddr, cs, BCM2835_SPI0_CS_CS);
+}
+
+void bcm2835_spi_setChipSelectPolarity(uint8_t cs, uint8_t active)
+{
+    volatile uint32_t* paddr = spi0 + BCM2835_SPI0_CS/4;
+    uint8_t shift = 21 + cs;
+    // Mask in the appropriate CSPOLn bit
+    bcm2835_peri_set_bits(paddr, active << shift, 1 << shift);
+}
+
+
 // Initialise this library
 int bcm2835_init()
 {
@@ -303,12 +424,13 @@ int bcm2835_init()
 	clk = (uint32_t*)BCM2835_CLOCK_BASE;
 	gpio = (uint32_t*)BCM2835_GPIO_BASE;
 	pwm = (uint32_t*)BCM2835_GPIO_PWM;
+	spi0 = (uint32_t*)BCM2835_SPI0_BASE;
 	return 1;
     }
     else
     {
 	int      fd ;
-	uint8_t *gpioMem, *pwmMem, *clkMem, *padsMem;
+	uint8_t *gpioMem, *pwmMem, *clkMem, *padsMem, *spi0Mem;
 	
 	// Open the master /dev/memory device
 	if ((fd = open("/dev/mem", O_RDWR | O_SYNC) ) < 0)
@@ -389,6 +511,24 @@ int bcm2835_init()
 	    fprintf(stderr, "bcm2835_init: mmap failed (pads): %s\n", strerror(errno)) ;
 	    return 0;
 	}
+
+	if ((spi0Mem = malloc(BCM2835_BLOCK_SIZE + (BCM2835_PAGE_SIZE - 1))) == NULL)
+	{
+	    fprintf(stderr, "bcm2835_init: spi0Mem malloc failed: %s\n", strerror(errno)) ;
+	    return 0;
+	}
+    
+	if (((uint32_t)spi0Mem % BCM2835_PAGE_SIZE) != 0)
+	    spi0Mem += BCM2835_PAGE_SIZE - ((uint32_t)spi0Mem % BCM2835_PAGE_SIZE) ;
+    
+	spi0 = (uint32_t *)mmap(spi0Mem, BCM2835_BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_FIXED, fd, BCM2835_SPI0_BASE) ;
+    
+	if ((int32_t)spi0 < 0)
+	{
+	    fprintf(stderr, "bcm2835_init: mmap failed (spi0): %s\n", strerror(errno)) ;
+	    return 0;
+	}
+
 	// Success
 	return 1;
     }
