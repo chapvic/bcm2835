@@ -24,6 +24,11 @@
 // ./a.out
 //#define BCM2835_TEST
 
+// Uncommenting this define compiles alternative I2C code for the version 1 RPi
+// The P1 header I2C pins are connected to SDA0 and SCL0 on V1.
+// By default I2C code is generated for the V2 RPi which has SDA1 and SCL1 connected.
+// #define I2C_V1
+
 // Pointers to the hardware register bases
 volatile uint32_t *bcm2835_gpio = MAP_FAILED;
 volatile uint32_t *bcm2835_pwm  = MAP_FAILED;
@@ -616,11 +621,17 @@ void bcm2835_spi_setChipSelectPolarity(uint8_t cs, uint8_t active)
 
 void bcm2835_i2c_begin(void)
 {
-	volatile uint32_t* paddr = bcm2835_bsc1 + BCM2835_BSC_DIV/4;
-
+#ifdef I2C_V1
+    volatile uint32_t* paddr = bcm2835_bsc0 + BCM2835_BSC_DIV/4;
+    // Set the I2C/BSC0 pins to the Alt 0 function to enable I2C access on them
+    bcm2835_gpio_fsel(RPI_GPIO_P1_03, BCM2835_GPIO_FSEL_ALT0); // SDA
+    bcm2835_gpio_fsel(RPI_GPIO_P1_05, BCM2835_GPIO_FSEL_ALT0); // SCL
+#else
+    volatile uint32_t* paddr = bcm2835_bsc1 + BCM2835_BSC_DIV/4;
     // Set the I2C/BSC1 pins to the Alt 0 function to enable I2C access on them
     bcm2835_gpio_fsel(RPI_V2_GPIO_P1_03, BCM2835_GPIO_FSEL_ALT0); // SDA
     bcm2835_gpio_fsel(RPI_V2_GPIO_P1_05, BCM2835_GPIO_FSEL_ALT0); // SCL
+#endif    
 
     // Read the clock divider register
     uint16_t cdiv = bcm2835_peri_read(paddr);
@@ -632,15 +643,25 @@ void bcm2835_i2c_begin(void)
 
 void bcm2835_i2c_end(void)
 {
+#ifdef I2C_V1
+    // Set all the I2C/BSC0 pins back to input
+    bcm2835_gpio_fsel(RPI_GPIO_P1_03, BCM2835_GPIO_FSEL_INPT); // SDA
+    bcm2835_gpio_fsel(RPI_GPIO_P1_05, BCM2835_GPIO_FSEL_INPT); // SCL
+#else
     // Set all the I2C/BSC1 pins back to input
     bcm2835_gpio_fsel(RPI_V2_GPIO_P1_03, BCM2835_GPIO_FSEL_INPT); // SDA
     bcm2835_gpio_fsel(RPI_V2_GPIO_P1_05, BCM2835_GPIO_FSEL_INPT); // SCL
+#endif
 }
 
 void bcm2835_i2c_setSlaveAddress(uint8_t addr)
 {
 	// Set I2C Device Address
+#ifdef I2C_V1
+	volatile uint32_t* paddr = bcm2835_bsc0 + BCM2835_BSC_A/4;
+#else	
 	volatile uint32_t* paddr = bcm2835_bsc1 + BCM2835_BSC_A/4;
+#endif
 	bcm2835_peri_write(paddr, addr);
 }
 
@@ -649,7 +670,11 @@ void bcm2835_i2c_setSlaveAddress(uint8_t addr)
 // rounded down.
 void bcm2835_i2c_setClockDivider(uint16_t divider)
 {
+#ifdef I2C_V1
+    volatile uint32_t* paddr = bcm2835_bsc0 + BCM2835_BSC_DIV/4;
+#else
     volatile uint32_t* paddr = bcm2835_bsc1 + BCM2835_BSC_DIV/4;
+#endif    
     bcm2835_peri_write(paddr, divider);
     // Calculate time for transmitting one byte
     // 1000000 = micros seconds in a second
@@ -669,10 +694,17 @@ void bcm2835_i2c_set_baudrate(uint32_t baudrate)
 // Writes an number of bytes to I2C
 uint8_t bcm2835_i2c_write(const char * buf, uint32_t len)
 {
+#ifdef I2C_V1
+    volatile uint32_t* dlen    = bcm2835_bsc0 + BCM2835_BSC_DLEN/4;
+    volatile uint32_t* fifo    = bcm2835_bsc0 + BCM2835_BSC_FIFO/4;
+    volatile uint32_t* status  = bcm2835_bsc0 + BCM2835_BSC_S/4;
+    volatile uint32_t* control = bcm2835_bsc0 + BCM2835_BSC_C/4;
+#else
     volatile uint32_t* dlen    = bcm2835_bsc1 + BCM2835_BSC_DLEN/4;
     volatile uint32_t* fifo    = bcm2835_bsc1 + BCM2835_BSC_FIFO/4;
     volatile uint32_t* status  = bcm2835_bsc1 + BCM2835_BSC_S/4;
     volatile uint32_t* control = bcm2835_bsc1 + BCM2835_BSC_C/4;
+#endif    
 
     uint32_t remaining = len;
     uint32_t i = 0;
@@ -733,10 +765,17 @@ uint8_t bcm2835_i2c_write(const char * buf, uint32_t len)
 // Read an number of bytes from I2C
 uint8_t bcm2835_i2c_read(char* buf, uint32_t len)
 {
+#ifdef I2C_V1
+    volatile uint32_t* dlen    = bcm2835_bsc0 + BCM2835_BSC_DLEN/4;
+    volatile uint32_t* fifo    = bcm2835_bsc0 + BCM2835_BSC_FIFO/4;
+    volatile uint32_t* status  = bcm2835_bsc0 + BCM2835_BSC_S/4;
+    volatile uint32_t* control = bcm2835_bsc0 + BCM2835_BSC_C/4;
+#else
     volatile uint32_t* dlen    = bcm2835_bsc1 + BCM2835_BSC_DLEN/4;
     volatile uint32_t* fifo    = bcm2835_bsc1 + BCM2835_BSC_FIFO/4;
     volatile uint32_t* status  = bcm2835_bsc1 + BCM2835_BSC_S/4;
     volatile uint32_t* control = bcm2835_bsc1 + BCM2835_BSC_C/4;
+#endif    
 
     uint32_t remaining = len;
     uint32_t i = 0;
@@ -800,11 +839,17 @@ uint8_t bcm2835_i2c_read(char* buf, uint32_t len)
 // the required register. Only works if your device supports this mode
 uint8_t bcm2835_i2c_read_register_rs(char* regaddr, char* buf, uint32_t len)
 {   
+#ifdef I2C_V1
+    volatile uint32_t* dlen    = bcm2835_bsc0 + BCM2835_BSC_DLEN/4;
+    volatile uint32_t* fifo    = bcm2835_bsc0 + BCM2835_BSC_FIFO/4;
+    volatile uint32_t* status  = bcm2835_bsc0 + BCM2835_BSC_S/4;
+    volatile uint32_t* control = bcm2835_bsc0 + BCM2835_BSC_C/4;
+#else
     volatile uint32_t* dlen    = bcm2835_bsc1 + BCM2835_BSC_DLEN/4;
     volatile uint32_t* fifo    = bcm2835_bsc1 + BCM2835_BSC_FIFO/4;
     volatile uint32_t* status  = bcm2835_bsc1 + BCM2835_BSC_S/4;
     volatile uint32_t* control = bcm2835_bsc1 + BCM2835_BSC_C/4;
-    
+#endif    
 	uint32_t remaining = len;
     uint32_t i = 0;
     uint8_t reason = BCM2835_I2C_REASON_OK;

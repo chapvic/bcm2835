@@ -4,7 +4,7 @@
 //
 // Author: Mike McCauley
 // Copyright (C) 2011-2013 Mike McCauley
-// $Id: bcm2835.h,v 1.11 2013/09/01 00:56:56 mikem Exp mikem $
+// $Id: bcm2835.h,v 1.12 2013/10/30 03:09:31 mikem Exp mikem $
 //
 /// \mainpage C library for Broadcom BCM 2835 as used in Raspberry Pi
 ///
@@ -22,7 +22,7 @@
 /// BCM 2835).
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.31.tar.gz
+/// from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.32.tar.gz
 /// You can find the latest version at http://www.airspayce.com/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -200,6 +200,10 @@
 ///  http://search.cpan.org/~mikem/Device-BCM2835-1.9/lib/Device/BCM2835.pm
 /// Matthew Baker has kindly made Python bindings available at:
 ///  https://github.com/mubeta06/py-libbcm2835
+/// Gary Marks has created a Serial Peripheral Interface (SPI) command-line utility 
+/// for Raspberry Pi, based on the bcm2835 library. The 
+/// utility, spincl, is licensed under Open Source GNU GPLv3 by iP Solutions (http://ipsolutionscorp.com), as a 
+/// free download with source included: http://ipsolutionscorp.com/raspberry-pi-spi-utility/
 ///
 /// \par Open Source Licensing GPL V2
 ///
@@ -291,6 +295,9 @@
 /// \version 1.30 10 microsecond delays from bcm2835_spi_transfer and bcm2835_spi_transfern for
 ///               significant performance improvements, Patch by Alan Watson.
 /// \version 1.31 Fix a GCC warning about dummy variable, patched by Alan Watson. Thanks.
+/// \version 1.32 Added option I2C_V1 definition to compile for version 1 RPi. 
+///               By default I2C code is generated for the V2 RPi which has SDA1 and SCL1 connected.
+///               Contributed by Malcolm Wiles.
 ///
 /// \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 
