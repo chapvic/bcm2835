@@ -34,7 +34,6 @@ volatile uint32_t *bcm2835_bsc0 = MAP_FAILED;
 volatile uint32_t *bcm2835_bsc1 = MAP_FAILED;
 volatile uint32_t *bcm2835_st	= MAP_FAILED;
 
-static int memfd = -1;
 
 // This variable allows us to test on hardware other than RPi.
 // It prevents access to the kernel memory, and does not do any peripheral access
@@ -833,6 +832,7 @@ int bcm2835_init(void)
 	bcm2835_st   = (uint32_t*)BCM2835_ST_BASE;
 	return 1; // Success
     }
+    int memfd = -1;
     int ok = 0;
     // Open the master /dev/memory device
     if ((memfd = open("/dev/mem", O_RDWR | O_SYNC) ) < 0) 
@@ -874,6 +874,9 @@ int bcm2835_init(void)
     ok = 1;
 
 exit:
+    if (memfd >= 0)
+        close(memfd);
+
     if (!ok)
 	bcm2835_close();
 
@@ -883,8 +886,7 @@ exit:
 // Close this library and deallocate everything
 int bcm2835_close(void)
 {
-    int ok = 1; // Success.
-    if (debug) return ok;
+    if (debug) return 1; // Success
     unmapmem((void**) &bcm2835_gpio, BCM2835_BLOCK_SIZE);
     unmapmem((void**) &bcm2835_pwm,  BCM2835_BLOCK_SIZE);
     unmapmem((void**) &bcm2835_clk,  BCM2835_BLOCK_SIZE);
@@ -892,12 +894,7 @@ int bcm2835_close(void)
     unmapmem((void**) &bcm2835_bsc0, BCM2835_BLOCK_SIZE);
     unmapmem((void**) &bcm2835_bsc1, BCM2835_BLOCK_SIZE);
     unmapmem((void**) &bcm2835_st,   BCM2835_BLOCK_SIZE);
-    if (memfd >= 0)
-    {
-	close(memfd);
-	memfd = -1;
-    }
-    return ok;
+    return 1; // Success
 }    
 
 #ifdef BCM2835_TEST

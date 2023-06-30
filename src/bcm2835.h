@@ -22,7 +22,7 @@
 /// BCM 2835).
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.19.tar.gz
+/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.20.tar.gz
 /// You can find the latest version at http://www.open.com.au/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -213,7 +213,9 @@
 /// \version 1.18 Added bcm2835_i2c_* functions. Changes to bcm2835_delayMicroseconds: 
 ///               now uses the RPi system timer counter, instead of clock_gettime, for improved accuracy. 
 ///               No need to link with -lrt now. Contributed by Arjan van Vught.
-/// \version 1.19 Removed inlines added by previous patch since they done seem to work everywhere. Reported by olly.
+/// \version 1.19 Removed inlines added by previous patch since they don't seem to work everywhere. 
+///               Reported by olly.
+/// \version 1.20 Patch from Mark Dootson to close/dev/mem after access to the peripherals has been granted.
 ///
 /// \author  Mike McCauley (mikem@airspayce.com)
 
@@ -242,7 +244,7 @@
 /// Base Physical Address of the BCM 2835 peripheral registers
 #define BCM2835_PERI_BASE               0x20000000
 /// Base Physical Address of the System Timer registers
-#define BCM2835_ST_BASE					(BCM2835_PERI_BASE + 0x3000)
+#define BCM2835_ST_BASE			(BCM2835_PERI_BASE + 0x3000)
 /// Base Physical Address of the Pads registers
 #define BCM2835_GPIO_PADS               (BCM2835_PERI_BASE + 0x100000)
 /// Base Physical Address of the Clock/timer registers
@@ -250,13 +252,13 @@
 /// Base Physical Address of the GPIO registers
 #define BCM2835_GPIO_BASE               (BCM2835_PERI_BASE + 0x200000)
 /// Base Physical Address of the SPI0 registers
-#define BCM2835_SPI0_BASE                (BCM2835_PERI_BASE + 0x204000)
+#define BCM2835_SPI0_BASE               (BCM2835_PERI_BASE + 0x204000)
 /// Base Physical Address of the BSC0 registers
-#define BCM2835_BSC0_BASE 				 (BCM2835_PERI_BASE + 0x205000)
+#define BCM2835_BSC0_BASE 		(BCM2835_PERI_BASE + 0x205000)
 /// Base Physical Address of the PWM registers
 #define BCM2835_GPIO_PWM                (BCM2835_PERI_BASE + 0x20C000)
  /// Base Physical Address of the BSC1 registers
-#define BCM2835_BSC1_BASE				 (BCM2835_PERI_BASE + 0x804000)
+#define BCM2835_BSC1_BASE		(BCM2835_PERI_BASE + 0x804000)
 
 
 /// Base of the ST (System Timer) registers.
