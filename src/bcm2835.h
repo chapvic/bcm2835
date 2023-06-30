@@ -23,7 +23,7 @@
   BCM 2835).
   
   The version of the package that this documentation refers to can be downloaded 
-  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.45.tar.gz
+  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.46.tar.gz
   You can find the latest version at http://www.airspayce.com/mikem/bcm2835
   
   Several example programs are provided.
@@ -411,6 +411,9 @@
   \version 1.45 Fixed an error in the pad group offsets that would prevent bcm2835_gpio_set_pad() 
   and bcm2835_gpio_pad() working correctly with non-0 pad groups. Reported by Guido.
 
+  \version 1.46 2015-09-18
+           Added symbolic definitions for remaining pins on 40 pin GPIO header on RPi 2. <br>
+
   \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 */
 
@@ -696,6 +699,15 @@ typedef enum
     RPI_V2_GPIO_P1_23     = 11,  /*!< Version 2, Pin P1-23, CLK when SPI0 in use */
     RPI_V2_GPIO_P1_24     =  8,  /*!< Version 2, Pin P1-24, CE0 when SPI0 in use */
     RPI_V2_GPIO_P1_26     =  7,  /*!< Version 2, Pin P1-26, CE1 when SPI0 in use */
+    RPI_V2_GPIO_P1_29     =  5,  /*!< Version 2, Pin P1-29 */
+    RPI_V2_GPIO_P1_31     =  6,  /*!< Version 2, Pin P1-31 */
+    RPI_V2_GPIO_P1_32     = 12,  /*!< Version 2, Pin P1-32 */
+    RPI_V2_GPIO_P1_33     = 13,  /*!< Version 2, Pin P1-33 */
+    RPI_V2_GPIO_P1_35     = 19,  /*!< Version 2, Pin P1-35 */
+    RPI_V2_GPIO_P1_36     = 16,  /*!< Version 2, Pin P1-36 */
+    RPI_V2_GPIO_P1_37     = 26,  /*!< Version 2, Pin P1-37 */
+    RPI_V2_GPIO_P1_38     = 20,  /*!< Version 2, Pin P1-38 */
+    RPI_V2_GPIO_P1_40     = 21,  /*!< Version 2, Pin P1-40 */
 
     /* RPi Version 2, new plug P5 */
     RPI_V2_GPIO_P5_03     = 28,  /*!< Version 2, Pin P5-03 */
@@ -703,7 +715,7 @@ typedef enum
     RPI_V2_GPIO_P5_05     = 30,  /*!< Version 2, Pin P5-05 */
     RPI_V2_GPIO_P5_06     = 31,  /*!< Version 2, Pin P5-06 */
 
-    /* RPi B+ J8 header */
+    /* RPi B+ J8 header, also RPi 2 40 pin GPIO header */
     RPI_BPLUS_GPIO_J8_03     =  2,  /*!< B+, Pin J8-03 */
     RPI_BPLUS_GPIO_J8_05     =  3,  /*!< B+, Pin J8-05 */
     RPI_BPLUS_GPIO_J8_07     =  4,  /*!< B+, Pin J8-07 */
@@ -723,13 +735,13 @@ typedef enum
     RPI_BPLUS_GPIO_J8_26     =  7,  /*!< B+, Pin J8-26, CE1 when SPI0 in use */
     RPI_BPLUS_GPIO_J8_29     =  5,  /*!< B+, Pin J8-29,  */
     RPI_BPLUS_GPIO_J8_31     =  6,  /*!< B+, Pin J8-31,  */
-    RPI_BPLUS_GPIO_J8_32     =  12, /*!< B+, Pin J8-32,  */
-    RPI_BPLUS_GPIO_J8_33     =  13, /*!< B+, Pin J8-33,  */
-    RPI_BPLUS_GPIO_J8_35     =  19, /*!< B+, Pin J8-35,  */
-    RPI_BPLUS_GPIO_J8_36     =  16, /*!< B+, Pin J8-36,  */
-    RPI_BPLUS_GPIO_J8_37     =  26, /*!< B+, Pin J8-37,  */
-    RPI_BPLUS_GPIO_J8_38     =  20, /*!< B+, Pin J8-38,  */
-    RPI_BPLUS_GPIO_J8_40     =  21  /*!< B+, Pin J8-40,  */
+    RPI_BPLUS_GPIO_J8_32     = 12,  /*!< B+, Pin J8-32,  */
+    RPI_BPLUS_GPIO_J8_33     = 13,  /*!< B+, Pin J8-33,  */
+    RPI_BPLUS_GPIO_J8_35     = 19,  /*!< B+, Pin J8-35,  */
+    RPI_BPLUS_GPIO_J8_36     = 16,  /*!< B+, Pin J8-36,  */
+    RPI_BPLUS_GPIO_J8_37     = 26,  /*!< B+, Pin J8-37,  */
+    RPI_BPLUS_GPIO_J8_38     = 20,  /*!< B+, Pin J8-38,  */
+    RPI_BPLUS_GPIO_J8_40     = 21   /*!< B+, Pin J8-40,  */
 } RPiGPIOPin;
 
 /* Defines for SPI
