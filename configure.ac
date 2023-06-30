@@ -4,7 +4,8 @@ dnl
 dnl $Id: configure.in,v 1.1 2012/12/01 22:56:52 mikem Exp mikem $
 dnl (C) 2012 Mike McCauley (mikem@airspayce.com)
 
-AC_INIT([bcm2835], [1.46], [mikem@airspayce.com])
+dnl Dont forget to update  BCM2835_VERSION in bcm2835.h
+AC_INIT([bcm2835], [1.47], [mikem@airspayce.com])
 
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE()

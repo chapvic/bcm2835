@@ -414,6 +414,8 @@
   \version 1.46 2015-09-18
            Added symbolic definitions for remaining pins on 40 pin GPIO header on RPi 2. <br>
 
+  \version 1.47 2015-11-18
+  Fixed possibly incorrect reads in bcm2835_i2c_read_register_rs, patch from Eckhardt Ulrich.<br>
   \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 */
 
@@ -424,7 +426,7 @@
 
 #include <stdint.h>
 
-#define BCM2835_VERSION 10042 /* Version 1.42 */
+#define BCM2835_VERSION 10047 /* Version 1.47 */
 
 /* RPi 2 is ARM v7, and has DMB instruction for memory barriers.
    Older RPis are ARM v6 and don't, so a coprocessor instruction must be used instead.
