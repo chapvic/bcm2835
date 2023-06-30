@@ -5,7 +5,7 @@
 //
 // Author: Mike McCauley
 // Copyright (C) 2011-2013 Mike McCauley
-// $Id: bcm2835.c,v 1.8 2013/02/15 22:06:09 mikem Exp mikem $
+// $Id: bcm2835.c,v 1.10 2013/03/18 05:57:36 mikem Exp mikem $
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -678,8 +678,8 @@ uint8_t bcm2835_i2c_write(const char * buf, uint32_t len)
 	bcm2835_peri_write_nb(status, BCM2835_BSC_S_CLKT | BCM2835_BSC_S_ERR | BCM2835_BSC_S_DONE);
 	// Set Data Length
     bcm2835_peri_write_nb(dlen, len);
-    // pre populate FIFO with up to 10 bytes ( an arbitrary num less than 16 )
-    while( remaining && ( i < 10 ) )
+    // pre populate FIFO with max buffer
+    while( remaining && ( i < BCM2835_BSC_FIFO_SIZE ) )
     {
         bcm2835_peri_write_nb(fifo, buf[i]);
         i++;
@@ -689,24 +689,16 @@ uint8_t bcm2835_i2c_write(const char * buf, uint32_t len)
     // Enable device and start transfer
     bcm2835_peri_write_nb(control, BCM2835_BSC_C_I2CEN | BCM2835_BSC_C_ST);
     
-    // wait for transfer to start
-    while ( !( bcm2835_peri_read(status) & BCM2835_BSC_S_TA ) )
+    // Transfer is over when BCM2835_BSC_S_DONE
+    while(!(bcm2835_peri_read_nb(status) & BCM2835_BSC_S_DONE ))
     {
-        bcm2835_delayMicroseconds(10);
-    }
-    
-    // write remaining data
-    while (bcm2835_peri_read(status) & BCM2835_BSC_S_TA )
-    {
-    	while ((bcm2835_peri_read(status) & BCM2835_BSC_S_TXD) && remaining)
+        while ( remaining && (bcm2835_peri_read_nb(status) & BCM2835_BSC_S_TXD ))
     	{
         	// Write to FIFO, no barrier
         	bcm2835_peri_write_nb(fifo, buf[i]);
         	i++;
         	remaining--;
     	}
-    	// wait
-    	bcm2835_delayMicroseconds(i2c_byte_wait_us);
     }
 
     // Received a NACK
@@ -750,33 +742,24 @@ uint8_t bcm2835_i2c_read(char* buf, uint32_t len)
 	bcm2835_peri_write_nb(status, BCM2835_BSC_S_CLKT | BCM2835_BSC_S_ERR | BCM2835_BSC_S_DONE);
 	// Set Data Length
     bcm2835_peri_write_nb(dlen, len);
-
     // Start read
     bcm2835_peri_write_nb(control, BCM2835_BSC_C_I2CEN | BCM2835_BSC_C_ST | BCM2835_BSC_C_READ);
     
-    // poll for transfer has started
-    while ( !( bcm2835_peri_read(status) & BCM2835_BSC_S_TA ) )
+    // wait for transfer to complete
+    while (!(bcm2835_peri_read_nb(status) & BCM2835_BSC_S_DONE))
     {
-        bcm2835_delayMicroseconds(10);
-    }    
-    
-    // empty FIFO as it is populated
-    while (bcm2835_peri_read(status) & BCM2835_BSC_S_TA)
-    {
-    	while (bcm2835_peri_read(status) & BCM2835_BSC_S_RXD)
+        // we must empty the FIFO as it is populated and not use any delay
+        while (bcm2835_peri_read_nb(status) & BCM2835_BSC_S_RXD)
     	{
     		// Read from FIFO, no barrier
     		buf[i] = bcm2835_peri_read_nb(fifo);
         	i++;
         	remaining--;
     	}
-    	// When remaining data is to be received, then wait for a data in FIFO
-        
-    	bcm2835_delayMicroseconds(i2c_byte_wait_us);
     }
     
     // transfer has finished - grab any remaining stuff in FIFO
-    while (remaining && (bcm2835_peri_read(status) & BCM2835_BSC_S_RXD))
+    while (remaining && (bcm2835_peri_read_nb(status) & BCM2835_BSC_S_RXD))
     {
         // Read from FIFO, no barrier
         buf[i] = bcm2835_peri_read_nb(fifo);
@@ -826,48 +809,41 @@ uint8_t bcm2835_i2c_read_register_rs(char* regaddr, char* buf, uint32_t len)
 	bcm2835_peri_write_nb(status, BCM2835_BSC_S_CLKT | BCM2835_BSC_S_ERR | BCM2835_BSC_S_DONE);
 	// Set Data Length
     bcm2835_peri_write_nb(dlen, 1);
-    // Enable device
+    // Enable device and start transfer
     bcm2835_peri_write_nb(control, BCM2835_BSC_C_I2CEN);
-	// Write register to fifo
     bcm2835_peri_write_nb(fifo, regaddr[0]);
-	// Start transfer
     bcm2835_peri_write_nb(control, BCM2835_BSC_C_I2CEN | BCM2835_BSC_C_ST);
     
-    // poll for transfer active as per BCM2835 manual discussing 10 bit addressing
-    while ( !( bcm2835_peri_read(status) & BCM2835_BSC_S_TA ) )
+    // poll for transfer has started
+    while ( !( bcm2835_peri_read_nb(status) & BCM2835_BSC_S_TA ) )
     {
-        bcm2835_delayMicroseconds(10);
+        // Linux may cause us to miss entire transfer stage
+        if(bcm2835_peri_read(status) & BCM2835_BSC_S_DONE)
+            break;
     }
     
     // Send a repeated start with read bit set in address
     bcm2835_peri_write_nb(dlen, len);
     bcm2835_peri_write_nb(control, BCM2835_BSC_C_I2CEN | BCM2835_BSC_C_ST  | BCM2835_BSC_C_READ );
     
-    // Wait for write to complete and first byte back. Doing this allows us to read
-	// more than 16 bytes back (FIFO limit) but is timing dependent.
-	// If issues arise with this timing, a sure fix is to poll for 'transfer no longer
-	// active' before reading the FIFO content - but that limits us to 16 bytes read max
-	//
-	// e.g while ( bcm2835_peri_read(status) & BCM2835_BSC_S_TA ) { bcm2835_delayMicroseconds(10); }
-	
+    // Wait for write to complete and first byte back.	
     bcm2835_delayMicroseconds(i2c_byte_wait_us * 3);
     
-    // empty FIFO as it is populated
-    while (bcm2835_peri_read(status) & BCM2835_BSC_S_TA)
+    // wait for transfer to complete
+    while (!(bcm2835_peri_read_nb(status) & BCM2835_BSC_S_DONE))
     {
-    	while (bcm2835_peri_read(status) & BCM2835_BSC_S_RXD)
+        // we must empty the FIFO as it is populated and not use any delay
+        while (remaining && bcm2835_peri_read_nb(status) & BCM2835_BSC_S_RXD)
     	{
     		// Read from FIFO, no barrier
     		buf[i] = bcm2835_peri_read_nb(fifo);
         	i++;
         	remaining--;
     	}
-    	// When remaining data is to be received, then wait for a data in FIFO
-    	bcm2835_delayMicroseconds(i2c_byte_wait_us);
     }
     
     // transfer has finished - grab any remaining stuff in FIFO
-    while (remaining && (bcm2835_peri_read(status) & BCM2835_BSC_S_RXD))
+    while (remaining && (bcm2835_peri_read_nb(status) & BCM2835_BSC_S_RXD))
     {
         // Read from FIFO, no barrier
         buf[i] = bcm2835_peri_read_nb(fifo);
