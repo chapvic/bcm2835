@@ -117,9 +117,28 @@ uint32_t bcm2835_peri_read(volatile uint32_t* paddr)
     }
     else
     {
-	uint32_t ret = *paddr;
-	bcm2835_memory_barrier();
-	return ret;
+#ifdef __arm__
+	/* Following code provides memory barriers before and after the read */
+       uint32_t ret;
+#ifdef BCM2835_HAVE_DMB
+       __asm__(        "\
+  dmb                    \
+  ldr %[ret], [%[paddr]] \
+  dmb								\
+" : [ret] "=r" (ret) : [paddr] "r" (paddr) : "memory" );
+#else
+       __asm__(            "\
+  mov r10,#0               \n			\
+  mcr p15,0,r10, c7, c10, 5\n			\
+  ldr %[ret], [%[paddr]]   \n			\
+  mcr p15,0,r10, c7, c10, 5\n					\
+" : [ret] "=r" (ret) : [paddr] "r" (paddr) : "r10", "memory" );
+#endif
+       return ret;
+#else
+       return *paddr; /* Not used on bcm2835 */
+#endif
+
     }
 }
 
@@ -153,8 +172,24 @@ void bcm2835_peri_write(volatile uint32_t* paddr, uint32_t value)
     }
     else
     {
-	bcm2835_memory_barrier();
-	*paddr = value;
+#ifdef __arm__
+	/* Following code provides memory barriers before and after the write */
+#ifdef BCM2835_HAVE_DMB
+       __asm__(        "\
+  dmb			   \
+  str %[value], [%[paddr]] \
+  dmb								\
+" : : [paddr] "r" (paddr), [value] "r" (value) : "memory" );
+#else
+       __asm__(            "\
+  mov r10,#0               \n			\
+  mcr p15,0,r10, c7, c10, 5\n			\
+  str %[value], [%[paddr]] \n			\
+  mcr p15,0,r10, c7, c10, 5\n						\
+" : : [paddr] "r" (paddr), [value] "r" (value) : "r10", "memory" );
+#endif
+
+#endif
     }
 }
 

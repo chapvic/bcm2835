@@ -23,7 +23,7 @@
   BCM 2835).
   
   The version of the package that this documentation refers to can be downloaded 
-  from http:  www.airspayce.com/mikem/bcm2835/bcm2835-1.41.tar.gz
+  from http:  www.airspayce.com/mikem/bcm2835/bcm2835-1.42.tar.gz
   You can find the latest version at http://www.airspayce.com/mikem/bcm2835
   
   Several example programs are provided.
@@ -366,9 +366,11 @@
   Fixed a problem where calling bcm2835_delayMicroseconds loops forever when debug is set. Reported by tlhackque.<br>
   Reinstated use of volatile in 2 functions where there was a danger of lost reads or writes. Reported by tlhackque.<br>
   
-  \version 14.1 Added BCM2835_VERSION macro and new function bcm2835_version(); Requested by tlhackque.<br>
+  \version 1.41 Added BCM2835_VERSION macro and new function bcm2835_version(); Requested by tlhackque.<br>
   Improvements to peripheral memory barriers as suggested by tlhackque.<br>
   Reinstated some necessary volatile declarations as requested by tlhackque.<br>
+
+  \version 1.42 Further improvements to memory barriers with the patient assistance and patches of tlhackque.<br>
 
   \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 */
@@ -380,7 +382,7 @@
 
 #include <stdint.h>
 
-#define BCM2835_VERSION 10041 /* Version 1.41 */
+#define BCM2835_VERSION 10042 /* Version 1.42 */
 
 /* RPi 2 is ARM v7, and has DMB instruction.
    Older RPis are ARM v6 and don't, so a coprocessor instruction must be used.
@@ -980,35 +982,6 @@ extern "C" {
       \sa Physical Addresses
     */
     extern uint32_t* bcm2835_regbase(uint8_t regbase);
-
-    /*! Generate a memory barrier instruction
-      This is used to ensure correct memory ordering when accessing peripherals.
-      It must be called from an interrupt service routine:
-       o If the ISR reads any peripheral register, at the start of the ISR
-       o If the ISR writes any peripheral register, at the end of the ISR
-       o If both, both places!
-       A memory barrier must also be used when switching a stream of reads and
-       writes from one peripheral to aother.  This can be done explicitly, or
-       by using the barrier forms of bcm2835_peri_read and write.
-    */
-
-    /*! Impose a memory barrier for peripheral access.
-      Inlined for fast access.
-      Note that this expands to 1 instruction (ARM V7), or ~ 4 (max) on older (save reg 10, load
-      reg 10, write to CP and restore R10).  Often R10 won't need to be saved...
-     */
-    extern __inline__  __attribute__((always_inline)) void bcm2835_memory_barrier( void ) {
-#ifdef __arm__
- #ifdef BCM2835_HAVE_DMB
-	__asm__( "dmb" : : : "memory" );
- #else
-	__asm__(              "\
-  mov r10,#0                 \n\
-  mcr p15,0,r10, c7, c10, 5  \n\
-  " : : : "r10", "memory" );
- #endif
-#endif
-    }
 
     /*! Reads 32 bit value from a peripheral address WITH a memory barrier before and after each read.
       This is safe, but slow.  The MB before protects this read from any in-flight reads that didn't
