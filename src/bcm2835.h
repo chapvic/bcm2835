@@ -23,7 +23,7 @@
   BCM 2835).
   
   The version of the package that this documentation refers to can be downloaded 
-  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.52.tar.gz
+  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.55.tar.gz
   You can find the latest version at http://www.airspayce.com/mikem/bcm2835
   
   Several example programs are provided.
@@ -506,6 +506,10 @@
   \version 1.54 2018-01-17
   Fixed compile errors in new AUX spi code under some circumstances.
 
+  \version 1.55 2018-01-20
+  Fixed version numbers.
+  Fixed some warnings.
+
   \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 */
 
@@ -516,7 +520,7 @@
 
 #include <stdint.h>
 
-#define BCM2835_VERSION 10052 /* Version 1.52 */
+#define BCM2835_VERSION 10055 /* Version 1.55 */
 
 /* RPi 2 is ARM v7, and has DMB instruction for memory barriers.
    Older RPis are ARM v6 and don't, so a coprocessor instruction must be used instead.
