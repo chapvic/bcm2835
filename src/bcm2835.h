@@ -4,7 +4,7 @@
   
    Author: Mike McCauley
    Copyright (C) 2011-2013 Mike McCauley
-   $Id: bcm2835.h,v 1.22 2018/01/16 04:46:01 mikem Exp mikem $
+   $Id: bcm2835.h,v 1.23 2018/01/16 21:55:07 mikem Exp mikem $
 */
 
 /*! \mainpage C library for Broadcom BCM 2835 as used in Raspberry Pi
@@ -503,6 +503,9 @@
   Added support for AUX SPI (SPI1)
   Contributed by Arjan van Vught (http://www.raspberrypi-dmx.org/)
 
+  \version 1.54 2018-01-17
+  Fixed compile errors in new AUX spi code under some circumstances.
+
   \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 */
 
@@ -533,6 +536,11 @@
 #define HIGH 0x1
 /*! This means pin LOW, false, 0volts on a pin. */
 #define LOW  0x0
+
+/*! Return the minimum of 2 numbers */
+#ifndef MIN
+#define MIN(a, b) (a < b ? a : b)
+#endif
 
 /*! Speed of the core clock core_clk */
 #define BCM2835_CORE_CLK_HZ		250000000	/*!< 250 MHz */
@@ -856,58 +864,58 @@ typedef enum
 /* Defines for AUX
   GPIO register offsets from BCM2835_AUX_BASE.
 */
-#define BCM2835_AUX_IRQ			0x0000
-#define BCM2835_AUX_ENABLE		0x0004
+#define BCM2835_AUX_IRQ			0x0000  /*! xxx */
+#define BCM2835_AUX_ENABLE		0x0004  /*! */
 
-#define BCM2835_AUX_ENABLE_UART1	0x01
+#define BCM2835_AUX_ENABLE_UART1	0x01    /*!<  */
 #define BCM2835_AUX_ENABLE_SPI0		0x02	/*!< SPI0 (SPI1 in the device) */
 #define BCM2835_AUX_ENABLE_SPI1		0x04	/*!< SPI1 (SPI2 in the device) */
 
 
-#define BCM2835_AUX_SPI_CNTL0		0x0000
-#define BCM2835_AUX_SPI_CNTL1 		0x0004
-#define BCM2835_AUX_SPI_STAT 		0x0008
+#define BCM2835_AUX_SPI_CNTL0		0x0000  /*!< */
+#define BCM2835_AUX_SPI_CNTL1 		0x0004  /*!< */
+#define BCM2835_AUX_SPI_STAT 		0x0008  /*!< */
 #define BCM2835_AUX_SPI_PEEK		0x000C  /*!< Read but do not take from FF */
-#define BCM2835_AUX_SPI_IO			0x0020  /*!< Write = TX, read=RX */
+#define BCM2835_AUX_SPI_IO		0x0020  /*!< Write = TX, read=RX */
 #define BCM2835_AUX_SPI_TXHOLD		0x0030  /*!< Write = TX keep CS, read=RX */
 
 #define BCM2835_AUX_SPI_CLOCK_MIN	30500		/*!< 30,5kHz */
 #define BCM2835_AUX_SPI_CLOCK_MAX	125000000 	/*!< 125Mhz */
 
-#define BCM2835_AUX_SPI_CNTL0_SPEED		0xFFF00000
-	#define BCM2835_AUX_SPI_CNTL0_SPEED_MAX		0xFFF
-	#define BCM2835_AUX_SPI_CNTL0_SPEED_SHIFT	20
+#define BCM2835_AUX_SPI_CNTL0_SPEED	0xFFF00000  /*! */
+#define BCM2835_AUX_SPI_CNTL0_SPEED_MAX	0xFFF      /*! */
+#define BCM2835_AUX_SPI_CNTL0_SPEED_SHIFT 20        /*! */
 
 #define BCM2835_AUX_SPI_CNTL0_CS0_N     0x000C0000 /*!< CS 0 low */
 #define BCM2835_AUX_SPI_CNTL0_CS1_N     0x000A0000 /*!< CS 1 low */
 #define BCM2835_AUX_SPI_CNTL0_CS2_N 	0x00060000 /*!< CS 2 low */
 
-#define BCM2835_AUX_SPI_CNTL0_POSTINPUT	0x00010000
-#define BCM2835_AUX_SPI_CNTL0_VAR_CS	0x00008000
-#define BCM2835_AUX_SPI_CNTL0_VAR_WIDTH	0x00004000
-#define BCM2835_AUX_SPI_CNTL0_DOUTHOLD	0x00003000
-#define BCM2835_AUX_SPI_CNTL0_ENABLE	0x00000800
-#define BCM2835_AUX_SPI_CNTL0_CPHA_IN	0x00000400
-#define BCM2835_AUX_SPI_CNTL0_CLEARFIFO	0x00000200
-#define BCM2835_AUX_SPI_CNTL0_CPHA_OUT	0x00000100
-#define BCM2835_AUX_SPI_CNTL0_CPOL		0x00000080
-#define BCM2835_AUX_SPI_CNTL0_MSBF_OUT	0x00000040
-#define BCM2835_AUX_SPI_CNTL0_SHIFTLEN	0x0000003F
+#define BCM2835_AUX_SPI_CNTL0_POSTINPUT	0x00010000  /*! */
+#define BCM2835_AUX_SPI_CNTL0_VAR_CS	0x00008000  /*! */
+#define BCM2835_AUX_SPI_CNTL0_VAR_WIDTH	0x00004000  /*! */
+#define BCM2835_AUX_SPI_CNTL0_DOUTHOLD	0x00003000  /*! */
+#define BCM2835_AUX_SPI_CNTL0_ENABLE	0x00000800  /*! */
+#define BCM2835_AUX_SPI_CNTL0_CPHA_IN	0x00000400  /*! */
+#define BCM2835_AUX_SPI_CNTL0_CLEARFIFO	0x00000200  /*! */
+#define BCM2835_AUX_SPI_CNTL0_CPHA_OUT	0x00000100  /*! */
+#define BCM2835_AUX_SPI_CNTL0_CPOL	0x00000080  /*! */
+#define BCM2835_AUX_SPI_CNTL0_MSBF_OUT	0x00000040  /*! */
+#define BCM2835_AUX_SPI_CNTL0_SHIFTLEN	0x0000003F  /*! */
 
-#define BCM2835_AUX_SPI_CNTL1_CSHIGH	0x00000700
-#define BCM2835_AUX_SPI_CNTL1_IDLE		0x00000080
-#define BCM2835_AUX_SPI_CNTL1_TXEMPTY	0x00000040
-#define BCM2835_AUX_SPI_CNTL1_MSBF_IN	0x00000002
-#define BCM2835_AUX_SPI_CNTL1_KEEP_IN	0x00000001
+#define BCM2835_AUX_SPI_CNTL1_CSHIGH	0x00000700  /*! */
+#define BCM2835_AUX_SPI_CNTL1_IDLE	0x00000080  /*! */
+#define BCM2835_AUX_SPI_CNTL1_TXEMPTY	0x00000040  /*! */
+#define BCM2835_AUX_SPI_CNTL1_MSBF_IN	0x00000002  /*! */
+#define BCM2835_AUX_SPI_CNTL1_KEEP_IN	0x00000001  /*! */
 
-#define BCM2835_AUX_SPI_STAT_TX_LVL		0xFF000000
-#define BCM2835_AUX_SPI_STAT_RX_LVL		0x00FF0000
-#define BCM2835_AUX_SPI_STAT_TX_FULL	0x00000400
-#define BCM2835_AUX_SPI_STAT_TX_EMPTY	0x00000200
-#define BCM2835_AUX_SPI_STAT_RX_FULL	0x00000100
-#define BCM2835_AUX_SPI_STAT_RX_EMPTY	0x00000080
-#define BCM2835_AUX_SPI_STAT_BUSY		0x00000040
-#define BCM2835_AUX_SPI_STAT_BITCOUNT	0x0000003F
+#define BCM2835_AUX_SPI_STAT_TX_LVL	0xFF000000  /*! */
+#define BCM2835_AUX_SPI_STAT_RX_LVL	0x00FF0000  /*! */
+#define BCM2835_AUX_SPI_STAT_TX_FULL	0x00000400  /*! */
+#define BCM2835_AUX_SPI_STAT_TX_EMPTY	0x00000200  /*! */
+#define BCM2835_AUX_SPI_STAT_RX_FULL	0x00000100  /*! */
+#define BCM2835_AUX_SPI_STAT_RX_EMPTY	0x00000080  /*! */
+#define BCM2835_AUX_SPI_STAT_BUSY	0x00000040  /*! */
+#define BCM2835_AUX_SPI_STAT_BITCOUNT	0x0000003F  /*! */
 
 /* Defines for SPI
    GPIO register offsets from BCM2835_SPI0_BASE. 
