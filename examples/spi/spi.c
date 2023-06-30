@@ -5,11 +5,11 @@
 //
 // After installing bcm2835, you can build this 
 // with something like:
-// gcc -o spi spi.c -l bcm2835
+// gcc -o spi  -l rt spi.c -l bcm2835
 // sudo ./spi
 //
 // Or you can test it before installing with:
-// gcc -o spi -I ../../src ../../src/bcm2835.c spi.c
+// gcc -o spi  -l rt -I ../../src ../../src/bcm2835.c spi.c
 // sudo ./spi
 //
 // Author: Mike McCauley (mikem@open.com.au)

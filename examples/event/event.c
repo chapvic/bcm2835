@@ -5,11 +5,11 @@
 //
 // After installing bcm2835, you can build this 
 // with something like:
-// gcc -o event event.c -l bcm2835 
+// gcc -o event -l rt event.c -l bcm2835 
 // sudo ./event
 //
 // Or you can test it before installing with:
-// gcc -o event -I ../../src ../../src/bcm2835.c event.c
+// gcc -o event -l rt -I ../../src ../../src/bcm2835.c event.c
 // sudo ./event
 //
 // Author: Mike McCauley (mikem@open.com.au)

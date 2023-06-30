@@ -33,6 +33,7 @@
 ///
 /// Based on data in http://elinux.org/RPi_Low-level_peripherals and 
 /// http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf
+/// and http://www.scribd.com/doc/101830961/GPIO-Pads-Control2
 ///
 /// You can also find online help and discussion at http://groups.google.com/group/bcm2835
 /// Please use that group for all questions and discussions on this topic. 
@@ -92,8 +93,9 @@
 ///
 /// When bcm2835_spi_begin() is called it changes the bahaviour of the SPI interface pins from their 
 /// default GPIO behaviour in order to support SPI. While SPI is in use, you will not be able 
-/// to control the state of the SPI pins through the usual bcm2835_spi_gpio_write(). When bcm2835_spi_end() is called, the SPI pins will all revert to inputs, and can then be configured and controled with the 
-/// usual bcm2835_gpio_* calls
+/// to control the state of the SPI pins through the usual bcm2835_spi_gpio_write().
+/// When bcm2835_spi_end() is called, the SPI pins will all revert to inputs, and can then be
+/// configured and controled with the usual bcm2835_gpio_* calls.
 ///
 /// The Raspberry Pi GPIO pins used for SPI are:
 /// 
@@ -123,7 +125,7 @@
 /// \version 1.2 Added support for SPI
 /// \version 1.3 Added bcm2835_spi_transfern()
 /// \version 1.4 Fixed a problem that prevented SPI CE1 being used. Reported by David Robinson.
-/// \version 1.5 Added bcm2835_close() to deinit the library. Suggested by César Ortiz
+/// \version 1.5 Added bcm2835_close() to deinit the library. Suggested by C?sar Ortiz
 /// \version 1.6 Document testing on 2012-07-15-wheezy-raspbian and Occidentalisv01
 ///              Functions bcm2835_gpio_ren(), bcm2835_gpio_fen(), bcm2835_gpio_hen()
 ///               bcm2835_gpio_len(), bcm2835_gpio_aren() and bcm2835_gpio_afen() now 
@@ -134,6 +136,20 @@
 ///                to clear the enable for individual pins, suggested by Andreas Sundstrom.
 /// \version 1.7 Added bcm2835_spi_transfernb to support different buffers for read and write.
 /// \version 1.8 Improvements to read barrier, as suggested by maddin.
+/// \version 1.9 Improvements contributed by mikew: 
+///              I noticed that it was mallocing memory for the mmaps on /dev/mem.
+///              It's not necessary to do that, you can just mmap the file directly,
+///              so I've removed the mallocs (and frees).
+///              I've also modified delayMicroseconds() to use nanosleep() for long waits,
+///              and a busy wait on a high resolution timer for the rest. This is because
+///              I've found that calling nanosleep() takes at least 100-200 us.
+///              You need to link using '-lrt' using this version.
+///              I've added some unsigned casts to the debug prints to silence compiler
+///              warnings I was getting, fixed some typos, and changed the value of
+///              BCM2835_PAD_HYSTERESIS_ENABLED to 0x08 as per Gert van Loo's doc at
+///              http://www.scribd.com/doc/101830961/GPIO-Pads-Control2
+///              Also added a define for the passwrd value that Gert says is needed to
+///              change pad control settings.
 ///
 /// \author  Mike McCauley (mikem@open.com.au)
 
@@ -228,7 +244,7 @@ typedef enum
 /// Pullup/Pulldown defines for bcm2845_gpio_pud()
 typedef enum
 {
-    BCM2835_GPIO_PUD_OFF     = 0b00,   ///< Off – disable pull-up/down
+    BCM2835_GPIO_PUD_OFF     = 0b00,   ///< Off ? disable pull-up/down
     BCM2835_GPIO_PUD_DOWN    = 0b01,   ///< Enable Pull Down control
     BCM2835_GPIO_PUD_UP      = 0b10    ///< Enable Pull Up control
 } bcm2835PUDControl;
@@ -239,8 +255,9 @@ typedef enum
 #define BCM2835_PADS_GPIO_46_53              0x0034 ///< Pad control register for pads 46 to 53
 
 /// Pad Control masks
+#define BCM2835_PAD_PASSWRD                  (0x5A << 24)  ///< Password to enable setting pad mask
 #define BCM2835_PAD_SLEW_RATE_UNLIMITED      0x10 ///< Slew rate unlimited
-#define BCM2835_PAD_HYSTERESIS_ENABLED       0x04 ///< Hysteresis enabled
+#define BCM2835_PAD_HYSTERESIS_ENABLED       0x08 ///< Hysteresis enabled
 #define BCM2835_PAD_DRIVE_2mA                0x00 ///< 2mA drive current
 #define BCM2835_PAD_DRIVE_4mA                0x01 ///< 4mA drive current
 #define BCM2835_PAD_DRIVE_6mA                0x02 ///< 6mA drive current
@@ -425,11 +442,11 @@ extern "C" {
     /// calling any other function may result in crashes or other failures.
     /// Prints messages to stderr in case of errors.
     /// \return 1 if successful else 0
-    extern int bcm2835_init();
+    extern int bcm2835_init(void);
 
-    /// Close the library, deallocating any allocaterd memory and closing /dev/mem
+    /// Close the library, deallocating any allocated memory and closing /dev/mem
     /// \return 1 if successful else 0
-    extern int bcm2835_close();
+    extern int bcm2835_close(void);
 
     /// Sets the debug level of the library.
     /// A value of 1 prevents mapping to /dev/mem, and makes the library print out
@@ -544,7 +561,7 @@ extern "C" {
     /// When a rising edge is detected, sets the appropriate pin in Event Detect Status.
     /// The GPRENn registers use
     /// synchronous edge detection. This means the input signal is sampled using the
-    /// system clock and then it is looking for a “011” pattern on the sampled signal. This
+    /// system clock and then it is looking for a ?011? pattern on the sampled signal. This
     /// has the effect of suppressing glitches.
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
     extern void bcm2835_gpio_ren(uint8_t pin);
@@ -557,7 +574,7 @@ extern "C" {
     /// When a falling edge is detected, sets the appropriate pin in Event Detect Status.
     /// The GPRENn registers use
     /// synchronous edge detection. This means the input signal is sampled using the
-    /// system clock and then it is looking for a “100” pattern on the sampled signal. This
+    /// system clock and then it is looking for a ?100? pattern on the sampled signal. This
     /// has the effect of suppressing glitches.
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
     extern void bcm2835_gpio_fen(uint8_t pin);
@@ -638,11 +655,12 @@ extern "C" {
     /// Delays for the specified number of microseconds.
     /// Uses nanosleep(), and therefore does not use CPU until the time is up.
     /// However, you are at the mercy of nanosleep(). From the manual for nanosleep:
-    /// If the interval specified in req is not an exact multiple of the granu-
-    ///   larity  underlying  clock  (see  time(7)),  then  the  interval will be
-    ///   rounded up to the next multiple.  Furthermore,  after  the  sleep  com-
-    ///   pletes,  there may still be a delay before the CPU becomes free to once
-    ///   again execute the calling thread.
+    /// If the interval specified in req is not an exact multiple of the granularity  
+    /// underlying  clock  (see  time(7)),  then  the  interval will be
+    /// rounded up to the next multiple.  Furthermore,  after  the  sleep  com-
+    /// pletes,  there may still be a delay before the CPU becomes free to once
+    /// again execute the calling thread.
+    /// For times less than about 450 microseconds, uses a busy wait on a high resolution timer.
     /// It is reported that a delay of 0 microseconds on RaspberryPi will in fact
     /// result in a dleay of about 80 microseconds. Your mileage may vary.
     /// \param[in] micros Delay in microseconds
@@ -672,12 +690,12 @@ extern "C" {
     /// You should call bcm2835_spi_end() when all SPI funcitons are complete to return the pins to 
     /// their default functions
     /// \sa  bcm2835_spi_end()
-    extern void bcm2835_spi_begin();
+    extern void bcm2835_spi_begin(void);
 
     /// End SPI operations.
     /// SPI0 pins P1-19 (MOSI), P1-21 (MISO), P1-23 (CLK), P1-24 (CE0) and P1-26 (CE1)
     /// are returned to their default INPUT behaviour.
-    extern void bcm2835_spi_end();
+    extern void bcm2835_spi_end(void);
 
     /// Sets the SPI bit order
     /// NOTE: has no effect. Not supported by SPI0.
@@ -768,4 +786,3 @@ extern "C" {
 
 /// @example spin.c
 /// Shows how to use SPI interface to transfer a number of bytes to and from an SPI device
-
