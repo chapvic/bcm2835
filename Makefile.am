@@ -8,6 +8,6 @@ examples/spi/spi.c \
 examples/spin/spin.c 
 
 upload:
-	rsync -avz @PACKAGE_TARNAME@-@VERSION@.tar.gz doc/html/ server2:/var/www/html/mikem/@PACKAGE_NAME@
+	rsync -avz @PACKAGE_TARNAME@-@VERSION@.tar.gz doc/html/ www.airspayce.com:public_html/mikem/@PACKAGE_NAME@
 
 

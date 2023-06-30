@@ -746,7 +746,7 @@ uninstall-am:
 
 
 upload:
-	rsync -avz @PACKAGE_TARNAME@-@VERSION@.tar.gz doc/html/ server2:/var/www/html/mikem/@PACKAGE_NAME@
+	rsync -avz @PACKAGE_TARNAME@-@VERSION@.tar.gz doc/html/ www.airspayce.com:public_html/mikem/@PACKAGE_NAME@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
