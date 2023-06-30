@@ -21,7 +21,7 @@
 /// BCM 2835).
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.16.tar.gz
+/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.17.tar.gz
 /// You can find the latest version at http://www.open.com.au/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -172,7 +172,7 @@
 /// \version 1.15 Added bcm2835_close() to end of examples as suggested by Mark Wolfe.
 /// \version 1.16 Added bcm2835_gpio_set_multi, bcm2835_gpio_clr_multi and bcm2835_gpio_write_multi
 ///               to allow a mask of pins to be set all at once. Requested by Sebastian Loncar.
-///
+/// \version 1.7  Added bcm2835_gpio_write_mask. Requested by Sebastian Loncar.
 /// \author  Mike McCauley (mikem@airspayce.com)
 
 
@@ -767,6 +767,11 @@ extern "C" {
     /// \param[in] mask Mask of pins to affect. Use eg: (1 << RPI_GPIO_P1_03) | (1 << RPI_GPIO_P1_05)
     /// \param[in] on HIGH sets the output to HIGH and LOW to LOW.
     extern void bcm2835_gpio_write_multi(uint32_t mask, uint8_t on);
+
+    /// Sets the first 32 GPIO output pins specified in the mask to the value given by value
+    /// \param[in] value values required for each bit masked in by mask, eg: (1 << RPI_GPIO_P1_03) | (1 << RPI_GPIO_P1_05)
+    /// \param[in] mask Mask of pins to affect. Use eg: (1 << RPI_GPIO_P1_03) | (1 << RPI_GPIO_P1_05)
+    extern void bcm2835_gpio_write_mask(uint32_t value, uint32_t mask);
 
     /// Sets the Pull-up/down mode for the specified pin. This is more convenient than
     /// clocking the mode in with bcm2835_gpio_pud() and bcm2835_gpio_pudclk().
