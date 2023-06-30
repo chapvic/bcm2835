@@ -4,7 +4,7 @@
 //
 // Author: Mike McCauley (mikem@open.com.au)
 // Copyright (C) 2011-2012 Mike McCauley
-// $Id: bcm2835.h,v 1.6 2012/11/29 01:39:33 mikem Exp mikem $
+// $Id: bcm2835.h,v 1.7 2012/12/01 22:56:52 mikem Exp mikem $
 //
 /// \mainpage C library for Broadcom BCM 2835 as used in Raspberry Pi
 ///
@@ -21,7 +21,7 @@
 /// BCM 2835).
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.13.tar.gz
+/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.14.tar.gz
 /// You can find the latest version at http://www.open.com.au/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -166,6 +166,9 @@
 /// \version 1.13 New GPIO pin definitions for RPi version 2 plug P5
 ///               Hardware base pointers are now available (after initialisation) externally as bcm2835_gpio
 ///               bcm2835_pwm bcm2835_clk bcm2835_pads bcm2835_spi0.
+/// \version 1.14 Now compiles even if CLOCK_MONOTONIC_RAW is not available, uses CLOCK_MONOTONIC instead.
+///               Fixed errors in documentation of SPI divider prefquencies based on 250MHz clock. 
+///               Reported by Ben Simpson.
 ///
 /// \author  Mike McCauley (mikem@open.com.au)
 
@@ -439,25 +442,28 @@ typedef enum
 /// \brief bcm2835SPIClockDivider
 /// Specifies the divider used to generate the SPI clock from the system clock.
 /// Figures below give the divider, clock period and clock frequency.
+/// Clock divided is based on nominal base clock rate of 250MHz
+/// It is reported that (contrary to the documentation) any even divider may used.
+/// The frequencies shown for each divider have been confirmed by measurement
 typedef enum
 {
-    BCM2835_SPI_CLOCK_DIVIDER_65536 = 0,       ///< 65536 = 256us = 4kHz
-    BCM2835_SPI_CLOCK_DIVIDER_32768 = 32768,   ///< 32768 = 126us = 8kHz
-    BCM2835_SPI_CLOCK_DIVIDER_16384 = 16384,   ///< 16384 = 64us = 15.625kHz
-    BCM2835_SPI_CLOCK_DIVIDER_8192  = 8192,    ///< 8192 = 32us = 31.25kHz
-    BCM2835_SPI_CLOCK_DIVIDER_4096  = 4096,    ///< 4096 = 16us = 62.5kHz
-    BCM2835_SPI_CLOCK_DIVIDER_2048  = 2048,    ///< 2048 = 8us = 125kHz
-    BCM2835_SPI_CLOCK_DIVIDER_1024  = 1024,    ///< 1024 = 4us = 250kHz
-    BCM2835_SPI_CLOCK_DIVIDER_512   = 512,     ///< 512 = 2us = 500kHz
-    BCM2835_SPI_CLOCK_DIVIDER_256   = 256,     ///< 256 = 1us = 1MHz
-    BCM2835_SPI_CLOCK_DIVIDER_128   = 128,     ///< 128 = 500ns = = 2MHz
-    BCM2835_SPI_CLOCK_DIVIDER_64    = 64,      ///< 64 = 250ns = 4MHz
-    BCM2835_SPI_CLOCK_DIVIDER_32    = 32,      ///< 32 = 125ns = 8MHz
-    BCM2835_SPI_CLOCK_DIVIDER_16    = 16,      ///< 16 = 50ns = 20MHz
-    BCM2835_SPI_CLOCK_DIVIDER_8     = 8,       ///< 8 = 25ns = 40MHz
-    BCM2835_SPI_CLOCK_DIVIDER_4     = 4,       ///< 4 = 12.5ns = 80MHz
-    BCM2835_SPI_CLOCK_DIVIDER_2     = 2,       ///< 2 = 6.25ns = 160MHz
-    BCM2835_SPI_CLOCK_DIVIDER_1     = 1,       ///< 0 = 256us = 4kHz
+    BCM2835_SPI_CLOCK_DIVIDER_65536 = 0,       ///< 65536 = 262.144us = 3.814697260kHz
+    BCM2835_SPI_CLOCK_DIVIDER_32768 = 32768,   ///< 32768 = 131.072us = 7.629394531kHz
+    BCM2835_SPI_CLOCK_DIVIDER_16384 = 16384,   ///< 16384 = 65.536us = 15.25878906kHz
+    BCM2835_SPI_CLOCK_DIVIDER_8192  = 8192,    ///< 8192 = 32.768us = 30/51757813kHz
+    BCM2835_SPI_CLOCK_DIVIDER_4096  = 4096,    ///< 4096 = 16.384us = 61.03515625kHz
+    BCM2835_SPI_CLOCK_DIVIDER_2048  = 2048,    ///< 2048 = 8.192us = 122.0703125kHz
+    BCM2835_SPI_CLOCK_DIVIDER_1024  = 1024,    ///< 1024 = 4.096us = 244.140625kHz
+    BCM2835_SPI_CLOCK_DIVIDER_512   = 512,     ///< 512 = 2.048us = 488.28125kHz
+    BCM2835_SPI_CLOCK_DIVIDER_256   = 256,     ///< 256 = 1.024us = 976.5625MHz
+    BCM2835_SPI_CLOCK_DIVIDER_128   = 128,     ///< 128 = 512ns = = 1.953125MHz
+    BCM2835_SPI_CLOCK_DIVIDER_64    = 64,      ///< 64 = 256ns = 3.90625MHz
+    BCM2835_SPI_CLOCK_DIVIDER_32    = 32,      ///< 32 = 128ns = 7.8125MHz
+    BCM2835_SPI_CLOCK_DIVIDER_16    = 16,      ///< 16 = 64ns = 15.625MHz
+    BCM2835_SPI_CLOCK_DIVIDER_8     = 8,       ///< 8 = 32ns = 31.25MHz
+    BCM2835_SPI_CLOCK_DIVIDER_4     = 4,       ///< 4 = 16ns = 62.5MHz
+    BCM2835_SPI_CLOCK_DIVIDER_2     = 2,       ///< 2 = 8ns = 125MHz, fastest you can get
+    BCM2835_SPI_CLOCK_DIVIDER_1     = 1,       ///< 0 = 262.144us = 3.814697260kHz, same as 0/65536
 } bcm2835SPIClockDivider;
 
 

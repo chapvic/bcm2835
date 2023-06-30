@@ -5,7 +5,7 @@
 //
 // Author: Mike McCauley (mikem@open.com.au)
 // Copyright (C) 2011 Mike McCauley
-// $Id: bcm2835.c,v 1.6 2012/11/29 01:39:33 mikem Exp mikem $
+// $Id: bcm2835.c,v 1.7 2012/12/01 22:56:52 mikem Exp mikem $
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -337,9 +337,17 @@ void bcm2835_delayMicroseconds(unsigned int micros)
 {
     struct timespec t0, t1;
     double t_us;
+
+    // Some systems do not define CLOCK_MONOTONIC_RAW
+#ifdef CLOCK_MONOTONIC_RAW
+#define CLOCK_ID CLOCK_MONOTONIC_RAW
+#else
+#define CLOCK_ID CLOCK_MONOTONIC
+#endif
+
     // Calling nanosleep() takes at least 100-200 us, so use it for
     // long waits and use a busy wait on the hires timer for the rest.
-    clock_gettime(CLOCK_MONOTONIC_RAW, &t0);
+    clock_gettime(CLOCK_ID, &t0);
     if (micros > 450)
     {
 	t1.tv_sec = 0;
@@ -349,7 +357,7 @@ void bcm2835_delayMicroseconds(unsigned int micros)
   
     while (1)
     {
-	clock_gettime(CLOCK_MONOTONIC_RAW, &t1);
+	clock_gettime(CLOCK_ID, &t1);
 	t_us = (t1.tv_sec - t0.tv_sec) * 1e6 + (t1.tv_nsec - t0.tv_nsec) * 1e-3;
 	if (t_us >= micros) 
 	    break;
