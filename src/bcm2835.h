@@ -23,7 +23,7 @@
   BCM 2835).
   
   The version of the package that this documentation refers to can be downloaded 
-  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.46.tar.gz
+  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.48.tar.gz
   You can find the latest version at http://www.airspayce.com/mikem/bcm2835
   
   Several example programs are provided.
@@ -416,6 +416,11 @@
 
   \version 1.47 2015-11-18
   Fixed possibly incorrect reads in bcm2835_i2c_read_register_rs, patch from Eckhardt Ulrich.<br>
+
+  \version 1.48 2015-12-08
+  Added patch from Eckhardt Ulrich that fixed problems that could cause hanging with bcm2835_i2c_read_register_rs
+  and others.
+
   \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 */
 
@@ -426,7 +431,7 @@
 
 #include <stdint.h>
 
-#define BCM2835_VERSION 10047 /* Version 1.47 */
+#define BCM2835_VERSION 10048 /* Version 1.48 */
 
 /* RPi 2 is ARM v7, and has DMB instruction for memory barriers.
    Older RPis are ARM v6 and don't, so a coprocessor instruction must be used instead.
@@ -833,7 +838,7 @@ typedef enum
     BCM2835_SPI_CLOCK_DIVIDER_2048  = 2048,    /*!< 2048 = 8.192us = 122.0703125kHz */
     BCM2835_SPI_CLOCK_DIVIDER_1024  = 1024,    /*!< 1024 = 4.096us = 244.140625kHz */
     BCM2835_SPI_CLOCK_DIVIDER_512   = 512,     /*!< 512 = 2.048us = 488.28125kHz */
-    BCM2835_SPI_CLOCK_DIVIDER_256   = 256,     /*!< 256 = 1.024us = 976.5625MHz */
+    BCM2835_SPI_CLOCK_DIVIDER_256   = 256,     /*!< 256 = 1.024us = 976.5625kHz */
     BCM2835_SPI_CLOCK_DIVIDER_128   = 128,     /*!< 128 = 512ns = = 1.953125MHz */
     BCM2835_SPI_CLOCK_DIVIDER_64    = 64,      /*!< 64 = 256ns = 3.90625MHz */
     BCM2835_SPI_CLOCK_DIVIDER_32    = 32,      /*!< 32 = 128ns = 7.8125MHz */
