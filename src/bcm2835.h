@@ -26,13 +26,26 @@
 /// http://www.open.com.au/mikem/bcm2835
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.5.tar.gz
+/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.6.tar.gz
 /// You can find the latest version at http://www.open.com.au/mikem/bcm2835
 ///
 /// Several example programs are provided.
 ///
 /// Based on data in http://elinux.org/RPi_Low-level_peripherals and 
 /// http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf
+///
+/// You can also find online help and discussion at http://groups.google.com/group/bcm2835
+/// Please use that group for all questions and discussions on this topic. 
+/// Do not contact the author directly, unless it is to discuss commercial licensing.
+///
+/// Tested on debian6-19-04-2012, 2012-07-15-wheezy-raspbian and Occidentalisv01
+/// CAUTION: it has been observed that when detect enables such as bcm2835_gpio_len() 
+/// are used and the pin is pulled LOW
+/// it can cause temporary hangs on 2012-07-15-wheezy-raspbian and Occidentalisv01.
+/// Reason for this is not yet determined, but suspect that an interrupt handler is
+/// hitting a hard loop on those OSs.
+/// If you must use bcm2835_gpio_len() and friends, make sure you disable the pins with 
+/// bcm2835_gpio_cler_len() and friends after use. 
 ///
 /// \par Installation
 ///
@@ -111,6 +124,14 @@
 /// \version 1.3 Added bcm2835_spi_transfern()
 /// \version 1.4 Fixed a problem that prevented SPI CE1 being used. Reported by David Robinson.
 /// \version 1.5 Added bcm2835_close() to deinit the library. Suggested by César Ortiz
+/// \version 1.6 Document testing on 2012-07-15-wheezy-raspbian and Occidentalisv01
+///              Functions bcm2835_gpio_ren(), bcm2835_gpio_fen(), bcm2835_gpio_hen()
+///               bcm2835_gpio_len(), bcm2835_gpio_aren() and bcm2835_gpio_afen() now 
+///               changes only the pin specified. Other pins that were already previoulsy
+///               enabled stay enabled.
+///              Added  bcm2835_gpio_clr_ren(), bcm2835_gpio_clr_fen(), bcm2835_gpio_clr_hen()
+///                bcm2835_gpio_clr_len(), bcm2835_gpio_clr_aren(), bcm2835_gpio_clr_afen() 
+///                to clear the enable for individual pins, suggested by Andreas Sundstrom.
 ///
 /// \author  Mike McCauley (mikem@open.com.au)
 
@@ -526,6 +547,10 @@ extern "C" {
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
     extern void bcm2835_gpio_ren(uint8_t pin);
 
+    /// Disable Rising Edge Detect Enable for the specified pin.
+    /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
+    extern void bcm2835_gpio_clr_ren(uint8_t pin);
+
     /// Enable Falling Edge Detect Enable for the specified pin.
     /// When a falling edge is detected, sets the appropriate pin in Event Detect Status.
     /// The GPRENn registers use
@@ -535,15 +560,27 @@ extern "C" {
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
     extern void bcm2835_gpio_fen(uint8_t pin);
 
+    /// Disable Falling Edge Detect Enable for the specified pin.
+    /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
+    extern void bcm2835_gpio_clr_fen(uint8_t pin);
+
     /// Enable High Detect Enable for the specified pin.
     /// When a HIGH level is detected on the pin, sets the appropriate pin in Event Detect Status.
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
     extern void bcm2835_gpio_hen(uint8_t pin);
 
+    /// Disable High Detect Enable for the specified pin.
+    /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
+    extern void bcm2835_gpio_clr_hen(uint8_t pin);
+
     /// Enable Low Detect Enable for the specified pin.
     /// When a LOW level is detected on the pin, sets the appropriate pin in Event Detect Status.
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
     extern void bcm2835_gpio_len(uint8_t pin);
+
+    /// Disable Low Detect Enable for the specified pin.
+    /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
+    extern void bcm2835_gpio_clr_len(uint8_t pin);
 
     /// Enable Asynchronous Rising Edge Detect Enable for the specified pin.
     /// When a rising edge is detected, sets the appropriate pin in Event Detect Status.
@@ -552,12 +589,20 @@ extern "C" {
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
     extern void bcm2835_gpio_aren(uint8_t pin);
 
+    /// Disable Asynchronous Rising Edge Detect Enable for the specified pin.
+    /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
+    extern void bcm2835_gpio_clr_aren(uint8_t pin);
+
     /// Enable Asynchronous Falling Edge Detect Enable for the specified pin.
     /// When a falling edge is detected, sets the appropriate pin in Event Detect Status.
     /// Asynchronous means the incoming signal is not sampled by the system clock. As such
     /// falling edges of very short duration can be detected.
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
     extern void bcm2835_gpio_afen(uint8_t pin);
+
+    /// Disable Asynchronous Falling Edge Detect Enable for the specified pin.
+    /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
+    extern void bcm2835_gpio_clr_afen(uint8_t pin);
 
     /// Sets the Pull-up/down register for the given pin. This is
     /// used with bcm2835_gpio_pudclk() to set the  Pull-up/down resistor for the given pin.
@@ -590,6 +635,14 @@ extern "C" {
 
     /// Delays for the specified number of microseconds.
     /// Uses nanosleep(), and therefore does not use CPU until the time is up.
+    /// However, you are at the mercy of nanosleep(). From the manual for nanosleep:
+    /// If the interval specified in req is not an exact multiple of the granu-
+    ///   larity  underlying  clock  (see  time(7)),  then  the  interval will be
+    ///   rounded up to the next multiple.  Furthermore,  after  the  sleep  com-
+    ///   pletes,  there may still be a delay before the CPU becomes free to once
+    ///   again execute the calling thread.
+    /// It is reported that a delay of 0 microseconds on RaspberryPi will in fact
+    /// result in a dleay of about 80 microseconds. Your mileage may vary.
     /// \param[in] micros Delay in microseconds
     extern void delayMicroseconds (unsigned int micros);
 

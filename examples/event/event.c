@@ -38,7 +38,6 @@ int main(int argc, char **argv)
     // And a low detect enable
     bcm2835_gpio_len(PIN);
 
-    // Blink
     while (1)
     {
 	if (bcm2835_gpio_eds(PIN))

@@ -188,7 +188,15 @@ void bcm2835_gpio_ren(uint8_t pin)
 {
     volatile uint32_t* paddr = gpio + BCM2835_GPREN0/4 + pin/32;
     uint8_t shift = pin % 32;
-    bcm2835_peri_write(paddr, 1 << shift);
+    uint32_t value = 1 << shift;
+    bcm2835_peri_set_bits(paddr, value, value);
+}
+void bcm2835_gpio_clr_ren(uint8_t pin)
+{
+    volatile uint32_t* paddr = gpio + BCM2835_GPREN0/4 + pin/32;
+    uint8_t shift = pin % 32;
+    uint32_t value = 1 << shift;
+    bcm2835_peri_set_bits(paddr, 0, value);
 }
 
 // Falling edge detect enable
@@ -196,7 +204,15 @@ void bcm2835_gpio_fen(uint8_t pin)
 {
     volatile uint32_t* paddr = gpio + BCM2835_GPFEN0/4 + pin/32;
     uint8_t shift = pin % 32;
-    bcm2835_peri_write(paddr, 1 << shift);
+    uint32_t value = 1 << shift;
+    bcm2835_peri_set_bits(paddr, value, value);
+}
+void bcm2835_gpio_clr_fen(uint8_t pin)
+{
+    volatile uint32_t* paddr = gpio + BCM2835_GPFEN0/4 + pin/32;
+    uint8_t shift = pin % 32;
+    uint32_t value = 1 << shift;
+    bcm2835_peri_set_bits(paddr, 0, value);
 }
 
 // High detect enable
@@ -204,7 +220,15 @@ void bcm2835_gpio_hen(uint8_t pin)
 {
     volatile uint32_t* paddr = gpio + BCM2835_GPHEN0/4 + pin/32;
     uint8_t shift = pin % 32;
-    bcm2835_peri_write(paddr, 1 << shift);
+    uint32_t value = 1 << shift;
+    bcm2835_peri_set_bits(paddr, value, value);
+}
+void bcm2835_gpio_clr_hen(uint8_t pin)
+{
+    volatile uint32_t* paddr = gpio + BCM2835_GPHEN0/4 + pin/32;
+    uint8_t shift = pin % 32;
+    uint32_t value = 1 << shift;
+    bcm2835_peri_set_bits(paddr, 0, value);
 }
 
 // Low detect enable
@@ -212,7 +236,15 @@ void bcm2835_gpio_len(uint8_t pin)
 {
     volatile uint32_t* paddr = gpio + BCM2835_GPLEN0/4 + pin/32;
     uint8_t shift = pin % 32;
-    bcm2835_peri_write(paddr, 1 << shift);
+    uint32_t value = 1 << shift;
+    bcm2835_peri_set_bits(paddr, value, value);
+}
+void bcm2835_gpio_clr_len(uint8_t pin)
+{
+    volatile uint32_t* paddr = gpio + BCM2835_GPLEN0/4 + pin/32;
+    uint8_t shift = pin % 32;
+    uint32_t value = 1 << shift;
+    bcm2835_peri_set_bits(paddr, 0, value);
 }
 
 // Async rising edge detect enable
@@ -220,7 +252,15 @@ void bcm2835_gpio_aren(uint8_t pin)
 {
     volatile uint32_t* paddr = gpio + BCM2835_GPAREN0/4 + pin/32;
     uint8_t shift = pin % 32;
-    bcm2835_peri_write(paddr, 1 << shift);
+    uint32_t value = 1 << shift;
+    bcm2835_peri_set_bits(paddr, value, value);
+}
+void bcm2835_gpio_clr_aren(uint8_t pin)
+{
+    volatile uint32_t* paddr = gpio + BCM2835_GPAREN0/4 + pin/32;
+    uint8_t shift = pin % 32;
+    uint32_t value = 1 << shift;
+    bcm2835_peri_set_bits(paddr, 0, value);
 }
 
 // Async falling edge detect enable
@@ -228,7 +268,15 @@ void bcm2835_gpio_afen(uint8_t pin)
 {
     volatile uint32_t* paddr = gpio + BCM2835_GPAFEN0/4 + pin/32;
     uint8_t shift = pin % 32;
-    bcm2835_peri_write(paddr, 1 << shift);
+    uint32_t value = 1 << shift;
+    bcm2835_peri_set_bits(paddr, value, value);
+}
+void bcm2835_gpio_clr_afen(uint8_t pin)
+{
+    volatile uint32_t* paddr = gpio + BCM2835_GPAFEN0/4 + pin/32;
+    uint8_t shift = pin % 32;
+    uint32_t value = 1 << shift;
+    bcm2835_peri_set_bits(paddr, 0, value);
 }
 
 // Set pullup/down
@@ -326,34 +374,34 @@ void bcm2835_gpio_set_pud(uint8_t pin, uint8_t pud)
 
 void bcm2835_spi_begin()
 {
-  // Set the SPI0 pins to the Alt 0 function to enable SPI0 access on them
-  bcm2835_gpio_fsel(RPI_GPIO_P1_26, BCM2835_GPIO_FSEL_ALT0); // CE1
-  bcm2835_gpio_fsel(RPI_GPIO_P1_24, BCM2835_GPIO_FSEL_ALT0); // CE0
-  bcm2835_gpio_fsel(RPI_GPIO_P1_21, BCM2835_GPIO_FSEL_ALT0); // MISO
-  bcm2835_gpio_fsel(RPI_GPIO_P1_19, BCM2835_GPIO_FSEL_ALT0); // MOSI
-  bcm2835_gpio_fsel(RPI_GPIO_P1_23, BCM2835_GPIO_FSEL_ALT0); // CLK
-
-  // Set the SPI CS register to the some sensible defaults
+    // Set the SPI0 pins to the Alt 0 function to enable SPI0 access on them
+    bcm2835_gpio_fsel(RPI_GPIO_P1_26, BCM2835_GPIO_FSEL_ALT0); // CE1
+    bcm2835_gpio_fsel(RPI_GPIO_P1_24, BCM2835_GPIO_FSEL_ALT0); // CE0
+    bcm2835_gpio_fsel(RPI_GPIO_P1_21, BCM2835_GPIO_FSEL_ALT0); // MISO
+    bcm2835_gpio_fsel(RPI_GPIO_P1_19, BCM2835_GPIO_FSEL_ALT0); // MOSI
+    bcm2835_gpio_fsel(RPI_GPIO_P1_23, BCM2835_GPIO_FSEL_ALT0); // CLK
+    
+    // Set the SPI CS register to the some sensible defaults
     volatile uint32_t* paddr = spi0 + BCM2835_SPI0_CS/4;
     bcm2835_peri_write(paddr, 0); // All 0s
-
-  // Clear TX and RX fifos
-  bcm2835_peri_write_nb(paddr, BCM2835_SPI0_CS_CLEAR);
+    
+    // Clear TX and RX fifos
+    bcm2835_peri_write_nb(paddr, BCM2835_SPI0_CS_CLEAR);
 }
 
 void bcm2835_spi_end()
 {  
-  // Set all the SPI0 pins back to input
-  bcm2835_gpio_fsel(RPI_GPIO_P1_26, BCM2835_GPIO_FSEL_INPT); // CE1
-  bcm2835_gpio_fsel(RPI_GPIO_P1_24, BCM2835_GPIO_FSEL_INPT); // CE0
-  bcm2835_gpio_fsel(RPI_GPIO_P1_21, BCM2835_GPIO_FSEL_INPT); // MISO
-  bcm2835_gpio_fsel(RPI_GPIO_P1_19, BCM2835_GPIO_FSEL_INPT); // MOSI
-  bcm2835_gpio_fsel(RPI_GPIO_P1_23, BCM2835_GPIO_FSEL_INPT); // CLK
+    // Set all the SPI0 pins back to input
+    bcm2835_gpio_fsel(RPI_GPIO_P1_26, BCM2835_GPIO_FSEL_INPT); // CE1
+    bcm2835_gpio_fsel(RPI_GPIO_P1_24, BCM2835_GPIO_FSEL_INPT); // CE0
+    bcm2835_gpio_fsel(RPI_GPIO_P1_21, BCM2835_GPIO_FSEL_INPT); // MISO
+    bcm2835_gpio_fsel(RPI_GPIO_P1_19, BCM2835_GPIO_FSEL_INPT); // MOSI
+    bcm2835_gpio_fsel(RPI_GPIO_P1_23, BCM2835_GPIO_FSEL_INPT); // CLK
 }
 
 void bcm2835_spi_setBitOrder(uint8_t order)
 {
-  // BCM2835_SPI_BIT_ORDER_MSBFIRST is the only one suported by SPI0
+    // BCM2835_SPI_BIT_ORDER_MSBFIRST is the only one suported by SPI0
 }
 
 // defaults to 0, which means a divider of 65536.

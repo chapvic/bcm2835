@@ -4,7 +4,7 @@ dnl
 dnl $Id: configure.in,v 1.12 2009/08/12 09:43:22 mikem Exp mikem $
 dnl (C) 2012 Mike McCauley (mikem@open.com.au)
 
-AC_INIT([bcm2835], [1.5], [mikem@open.com.au])
+AC_INIT([bcm2835], [1.6], [mikem@open.com.au])
 
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE()
