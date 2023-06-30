@@ -26,7 +26,7 @@
   BCM 2835).
   
   The version of the package that this documentation refers to can be downloaded 
-  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.64.tar.gz
+  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.68.tar.gz
   You can find the latest version at http://www.airspayce.com/mikem/bcm2835
   
   Several example programs are provided.
