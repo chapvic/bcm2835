@@ -23,7 +23,7 @@
   BCM 2835).
   
   The version of the package that this documentation refers to can be downloaded 
-  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.55.tar.gz
+  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.56.tar.gz
   You can find the latest version at http://www.airspayce.com/mikem/bcm2835
   
   Several example programs are provided.
@@ -510,6 +510,11 @@
   Fixed version numbers.
   Fixed some warnings.
 
+  \version 1.56 2018-06-10
+  Supports bcm2835_spi_setBitOrder(BCM2835_SPI_BIT_ORDER_LSBFIRST), after which SPI bytes are reversed on read or write.
+  Based on a suggestion by Damiano Benedetti.
+  
+  
   \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 */
 
@@ -520,7 +525,7 @@
 
 #include <stdint.h>
 
-#define BCM2835_VERSION 10055 /* Version 1.55 */
+#define BCM2835_VERSION 10056 /* Version 1.56 */
 
 /* RPi 2 is ARM v7, and has DMB instruction for memory barriers.
    Older RPis are ARM v6 and don't, so a coprocessor instruction must be used instead.
@@ -1555,8 +1560,9 @@ extern "C" {
     extern void bcm2835_spi_end(void);
 
     /*! Sets the SPI bit order
-      NOTE: has no effect. Not supported by SPI0.
-      Defaults to 
+      Set the bit order to be used for transmit and receive. The bcm2835 SPI0 only supports BCM2835_SPI_BIT_ORDER_MSB,
+      so if you select BCM2835_SPI_BIT_ORDER_LSB, the bytes will be reversed in software.
+      The library defaults to BCM2835_SPI_BIT_ORDER_MSB.
       \param[in] order The desired bit order, one of BCM2835_SPI_BIT_ORDER_*, 
       see \ref bcm2835SPIBitOrder
     */
