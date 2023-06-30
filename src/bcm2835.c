@@ -59,8 +59,10 @@ uint32_t bcm2835_peri_read(volatile uint32_t* paddr)
     }
     else
     {
+	// Make sure we dont return the _last_ read which might get lost
+	// if subsequent code changes to a differnt peripheral
 	uint32_t ret = *paddr;
-	ret = *paddr;
+	uint32_t dummy = *paddr;
 	return ret;
     }
 }
@@ -86,6 +88,8 @@ void bcm2835_peri_write(volatile uint32_t* paddr, uint32_t value)
     }
     else
     {
+	// Make sure we dont rely on the firs write, which may get
+	// list if the previous access was to a different peripheral.
 	*paddr = value;
 	*paddr = value;
     }

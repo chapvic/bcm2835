@@ -26,7 +26,7 @@
 /// http://www.open.com.au/mikem/bcm2835
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.7.tar.gz
+/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.8.tar.gz
 /// You can find the latest version at http://www.open.com.au/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -133,6 +133,7 @@
 ///                bcm2835_gpio_clr_len(), bcm2835_gpio_clr_aren(), bcm2835_gpio_clr_afen() 
 ///                to clear the enable for individual pins, suggested by Andreas Sundstrom.
 /// \version 1.7 Added bcm2835_spi_transfernb to support different buffers for read and write.
+/// \version 1.8 Improvements to read barrier, as suggested by maddin.
 ///
 /// \author  Mike McCauley (mikem@open.com.au)
 
