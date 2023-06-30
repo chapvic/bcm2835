@@ -49,6 +49,7 @@ int main(int argc, char **argv)
     printf("Read from SPI: %02X  %02X  %02X  %02X \n", buf[0], buf[1], buf[2], buf[3]);
     
     bcm2835_spi_end();
+    bcm2835_close();
     return 0;
 }
 

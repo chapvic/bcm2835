@@ -47,6 +47,7 @@ int main(int argc, char **argv)
 	delay(500);
     }
 
+    bcm2835_close();
     return 0;
 }
 

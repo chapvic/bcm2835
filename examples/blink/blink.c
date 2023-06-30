@@ -18,7 +18,7 @@
 
 #include <bcm2835.h>
 
-// Blinks on RPi pin GPIO 11
+// Blinks on RPi Plug P1 pin 11 (which is GPIO pin 17)
 #define PIN RPI_GPIO_P1_11
 
 int main(int argc, char **argv)
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 	// wait a bit
 	bcm2835_delay(500);
     }
-
+    bcm2835_close();
     return 0;
 }
 

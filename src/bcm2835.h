@@ -21,7 +21,7 @@
 /// BCM 2835).
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.14.tar.gz
+/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.15.tar.gz
 /// You can find the latest version at http://www.open.com.au/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -169,6 +169,7 @@
 /// \version 1.14 Now compiles even if CLOCK_MONOTONIC_RAW is not available, uses CLOCK_MONOTONIC instead.
 ///               Fixed errors in documentation of SPI divider prefquencies based on 250MHz clock. 
 ///               Reported by Ben Simpson.
+/// \version 1.15 Added bcm2835_close() to end of examples as suggested by Mark Wolfe.
 ///
 /// \author  Mike McCauley (mikem@open.com.au)
 
