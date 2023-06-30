@@ -2,7 +2,7 @@
 // Blinks a pin on an off every 0.5 secs
 // Author: Mike McCauley (mikem@open.com.au)
 // Copyright (C) 2011 Mike McCauley
-// $Id: test.c,v 1.2 2012/06/26 01:40:50 mikem Exp mikem $
+// $Id: test.c,v 1.2 2012/06/26 01:40:50 mikem Exp $
 
 #include <bcm2835.h>
 #include <stdio.h>

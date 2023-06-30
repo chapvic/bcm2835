@@ -1,7 +1,7 @@
 // spi.c
 //
 // Example program for bcm2835 library
-// Shows how to interface with SPI
+// Shows how to interface with SPI to transfer a byte to and from an SPI device
 //
 // After installing bcm2835, you can build this 
 // with something like:

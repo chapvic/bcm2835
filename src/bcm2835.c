@@ -5,7 +5,7 @@
 //
 // Author: Mike McCauley (mikem@open.com.au)
 // Copyright (C) 2011 Mike McCauley
-// $Id: RF22.h,v 1.21 2012/05/30 01:51:25 mikem Exp $
+// $Id: bcm2835.c,v 1.3 2012/06/26 05:48:43 mikem Exp mikem $
 
 #include "bcm2835.h"
 #include <stdlib.h>
@@ -371,32 +371,74 @@ uint8_t bcm2835_spi_transfer(uint8_t value)
     volatile uint32_t* paddr = spi0 + BCM2835_SPI0_CS/4;
     volatile uint32_t* fifo = spi0 + BCM2835_SPI0_FIFO/4;
 
-  // This is Polled transfer as per section 10.6.1
+    // This is Polled transfer as per section 10.6.1
+    // BUG ALERT: what happens if we get interupted in this section, and someone else
+    // accesses a different peripheral? 
+    // Clear TX and RX fifos
+    bcm2835_peri_write_nb(paddr, BCM2835_SPI0_CS_CLEAR);
 
-  // Clear TX and RX fifos
-   bcm2835_peri_write_nb(paddr, BCM2835_SPI0_CS_CLEAR);
+    // Set TA = 1
+    bcm2835_peri_set_bits(paddr, BCM2835_SPI0_CS_TA, BCM2835_SPI0_CS_TA);
 
-  // Set TA = 1
-  bcm2835_peri_set_bits(paddr, BCM2835_SPI0_CS_TA, BCM2835_SPI0_CS_TA);
+    // Maybe wait for TXD
+    while (!(bcm2835_peri_read(paddr) & BCM2835_SPI0_CS_TXD))
+	delayMicroseconds(10);
 
-  // Maybe wait for TXD
-  while (!(bcm2835_peri_read(paddr) & BCM2835_SPI0_CS_TXD))
-    delayMicroseconds(10);
+    // Write to FIFO, no barrier
+    bcm2835_peri_write_nb(fifo, value);
 
-  // Write to FIFO, no barrier else output 2 bytes
-  bcm2835_peri_write_nb(fifo, value);
+    // Wait for DONE to be set
+    while (!(bcm2835_peri_read_nb(paddr) & BCM2835_SPI0_CS_DONE))
+	delayMicroseconds(10);
 
-  // Wait for DONE to be set
-  while (!(bcm2835_peri_read_nb(paddr) & BCM2835_SPI0_CS_DONE))
-    delayMicroseconds(10);
+    // Read any byte that was sent back by the slave while we sere sending to it
+    uint32_t ret = bcm2835_peri_read_nb(fifo);
 
-  // Read any byte that was sent back by the slave while we sere sending to it
-  uint32_t ret = bcm2835_peri_read_nb(fifo);
+    // Set TA = 0, and also set the barrier
+    bcm2835_peri_set_bits(paddr, 0, BCM2835_SPI0_CS_TA);
 
-  // Set TA = 0, and also set the barrier
-  bcm2835_peri_set_bits(paddr, 0, BCM2835_SPI0_CS_TA);
+    return ret;
+}
 
-  return ret;
+// Writes (and reads) an number of bytes to SPI
+void bcm2835_spi_transfern(char* buf, uint32_t len)
+{
+    volatile uint32_t* paddr = spi0 + BCM2835_SPI0_CS/4;
+    volatile uint32_t* fifo = spi0 + BCM2835_SPI0_FIFO/4;
+
+    // This is Polled transfer as per section 10.6.1
+    // BUG ALERT: what happens if we get interupted in this section, and someone else
+    // accesses a different peripheral? 
+
+    // Clear TX and RX fifos
+    bcm2835_peri_write_nb(paddr, BCM2835_SPI0_CS_CLEAR);
+
+    // Set TA = 1
+    bcm2835_peri_set_bits(paddr, BCM2835_SPI0_CS_TA, BCM2835_SPI0_CS_TA);
+
+    uint32_t i;
+    for (i = 0; i < len; i++)
+    {
+	// Maybe wait for TXD
+	while (!(bcm2835_peri_read(paddr) & BCM2835_SPI0_CS_TXD))
+	    delayMicroseconds(10);
+
+	// Write to FIFO, no barrier
+	bcm2835_peri_write_nb(fifo, buf[i]);
+
+	// Wait for RXD
+	while (!(bcm2835_peri_read(paddr) & BCM2835_SPI0_CS_RXD))
+	    delayMicroseconds(10);
+
+	// then read the data byte
+	buf[i] = bcm2835_peri_read_nb(fifo);
+    }
+    // Wait for DONE to be set
+    while (!(bcm2835_peri_read_nb(paddr) & BCM2835_SPI0_CS_DONE))
+	delayMicroseconds(10);
+
+    // Set TA = 0, and also set the barrier
+    bcm2835_peri_set_bits(paddr, 0, BCM2835_SPI0_CS_TA);
 }
 
 void bcm2835_spi_chipSelect(uint8_t cs)

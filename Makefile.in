@@ -190,7 +190,8 @@ CLEANFILES = *~
 EXTRA_DIST = examples/blink/blink.c \
 examples/input/input.c \
 examples/event/event.c \
-examples/spi/spi.c 
+examples/spi/spi.c \
+examples/spin/spin.c 
 
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive

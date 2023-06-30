@@ -6,7 +6,7 @@
 //
 // Author: Mike McCauley (mikem@open.com.au)
 // Copyright (C) 2011 Mike McCauley
-// $Id: RF22.h,v 1.21 2012/05/30 01:51:25 mikem Exp $
+// $Id: bcm2835.h,v 1.3 2012/06/26 05:48:43 mikem Exp mikem $
 //
 /// \mainpage C library for Broadcom BCM 2835 as used in Raspberry Pi
 ///
@@ -26,7 +26,7 @@
 /// http://www.open.com.au/mikem/bcm2835
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.2.tar.gz
+/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.3.tar.gz
 /// You can find the latest version at http://www.open.com.au/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -106,6 +106,9 @@
 /// \par Revision History
 ///
 /// \version 1.0 Initial release
+/// \version 1.1 Minor bug fixes
+/// \version 1.2 Added support for SPI
+/// \version 1.3 Added bcm2835_spi_transfern()
 ///
 /// \author  Mike McCauley (mikem@open.com.au)
 
@@ -618,17 +621,20 @@ extern "C" {
     /// Sets the SPI bit order
     /// NOTE: has no effect. Not supported by SPI0.
     /// Defaults to 
-    /// \param[in] order The desired bit order, one of BCM2835_SPI_BIT_ORDER_*, see \ref bcm2835SPIBitOrder
+    /// \param[in] order The desired bit order, one of BCM2835_SPI_BIT_ORDER_*, 
+  /// see \ref bcm2835SPIBitOrder
     extern void bcm2835_spi_setBitOrder(uint8_t order);
 
     /// Sets the SPI clock divider and therefore the 
     /// SPI clock speed. 
-    /// \param[in] divider The desired SPI clock divider, one of BCM2835_SPI_CLOCK_DIVIDER_*, see \ref bcm2835SPIClockDivider
+    /// \param[in] divider The desired SPI clock divider, one of BCM2835_SPI_CLOCK_DIVIDER_*, 
+  /// see \ref bcm2835SPIClockDivider
     extern void bcm2835_spi_setClockDivider(uint16_t divider);
 
     /// Sets the SPI data mode
     /// Sets the clock polariy and phase
-    /// \param[in] mode The desired data mode, one of BCM2835_SPI_MODE*, see \ref bcm2835SPIMode
+    /// \param[in] mode The desired data mode, one of BCM2835_SPI_MODE*, 
+  /// see \ref bcm2835SPIMode
     extern void bcm2835_spi_setDataMode(uint8_t mode);
 
     /// Sets the chip select pin(s)
@@ -647,13 +653,27 @@ extern "C" {
     /// \param[in] active Whether the chip select pin is to be active HIGH
     extern void bcm2835_spi_setChipSelectPolarity(uint8_t cs, uint8_t active);
 
-    /// Transfers data to and from the curently selected SPI slave.
-    /// Asserts the currently selected CS pins (as previously set by bcm2835_spi_chipSelect.
-    /// Clocks the 8 bit value out on MOSI, and simulataneously clocks in data from MISO. 
-    /// Returns the read data.
+    /// Transfers one byte to and from the currently selected SPI slave.
+    /// Asserts the currently selected CS pins (as previously set by bcm2835_spi_chipSelect) 
+    /// during the transfer.
+    /// Clocks the 8 bit value out on MOSI, and simultaneously clocks in data from MISO. 
+    /// Returns the read data byte from the slave.
+    /// Uses polled transfer as per section 10.6.1 of teh BCM 2835 ARM Peripherls manual
     /// \param[in] value The 8 bit data byte to write to MOSI
     /// \return The 8 bit byte simultaneously read from  MISO
+    /// \sa bcm2835_spi_transfern()
     extern uint8_t bcm2835_spi_transfer(uint8_t value);
+    
+    /// Transfers any number of bytes to and from the currently selected SPI slave.
+    /// Asserts the currently selected CS pins (as previously set by bcm2835_spi_chipSelect) 
+    /// during the transfer.
+    /// Clocks the len 8 bit bytes out on MOSI, and simultaneously clocks in data from MISO. 
+    /// The returned data from the slave replaces the transmitted data in the buffer.
+    /// Uses polled transfer as per section 10.6.1 of teh BCM 2835 ARM Peripherls manual
+    /// \param[in,out] buf Buffer of bytes to send. Received bytes will replace the contents
+    /// \param[in] len Number of bytes int eh buffer, and the number of bytes to send/received
+    /// \sa bcm2835_spi_transfer()
+    extern void bcm2835_spi_transfern(char* buf, uint32_t len);
 
 
     /// @} 
@@ -674,5 +694,8 @@ extern "C" {
 /// Shows how to use event detection on an input pin
 
 /// @example spi.c
-/// Shows how to use SPI interface
+/// Shows how to use SPI interface to transfer a byte to and from an SPI device
+
+/// @example spin.c
+/// Shows how to use SPI interface to transfer a number of bytes to and from an SPI device
 
