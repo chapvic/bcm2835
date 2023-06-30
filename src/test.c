@@ -5,7 +5,7 @@
 //
 // Author: Mike McCauley
 // Copyright (C) 2011-2013 Mike McCauley
-// $Id: test.c,v 1.3 2012/11/29 01:39:33 mikem Exp $
+// $Id: test.c,v 1.4 2013/03/17 06:08:29 mikem Exp mikem $
 
 #include <bcm2835.h>
 #include <stdio.h>
