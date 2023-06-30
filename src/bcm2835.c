@@ -3,7 +3,7 @@
 // http://elinux.org/RPi_Low-level_peripherals
 // http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf
 //
-// Author: Mike McCauley (mikem@open.com.au)
+// Author: Mike McCauley (mikem@airspayce.com)
 // Copyright (C) 2011 Mike McCauley
 // $Id: bcm2835.c,v 1.7 2012/12/01 22:56:52 mikem Exp mikem $
 
@@ -33,7 +33,7 @@ volatile uint32_t *bcm2835_spi0 = MAP_FAILED;
 
 static int memfd = -1;
 
-// This define allows us to test on hardware other than RPi.
+// This variable allows us to test on hardware other than RPi.
 // It prevents access to the kernel memory, and does not do any peripheral access
 // Instead it prints out what it _would_ do if debug were 0
 static uint8_t debug = 0;
@@ -163,6 +163,20 @@ void bcm2835_gpio_clr(uint8_t pin)
     volatile uint32_t* paddr = bcm2835_gpio + BCM2835_GPCLR0/4 + pin/32;
     uint8_t shift = pin % 32;
     bcm2835_peri_write(paddr, 1 << shift);
+}
+
+// Set all output pins in the mask
+void bcm2835_gpio_set_multi(uint32_t mask)
+{
+    volatile uint32_t* paddr = bcm2835_gpio + BCM2835_GPSET0/4;
+    bcm2835_peri_write(paddr, mask);
+}
+
+// Clear all output pins in the mask
+void bcm2835_gpio_clr_multi(uint32_t mask)
+{
+    volatile uint32_t* paddr = bcm2835_gpio + BCM2835_GPCLR0/4;
+    bcm2835_peri_write(paddr, mask);
 }
 
 // Read input pin
@@ -372,13 +386,18 @@ void bcm2835_delayMicroseconds(unsigned int micros)
 void bcm2835_gpio_write(uint8_t pin, uint8_t on)
 {
     if (on)
-    {
 	bcm2835_gpio_set(pin);
-    }
     else
-    {
 	bcm2835_gpio_clr(pin);
-    }
+}
+
+// Set the state of a all 32 outputs
+void bcm2835_gpio_write_multi(uint32_t mask, uint8_t on)
+{
+    if (on)
+	bcm2835_gpio_set_multi(mask);
+    else
+	bcm2835_gpio_clr_multi(mask);
 }
 
 // Set the pullup/down resistor for a pin
@@ -569,15 +588,14 @@ void *malloc_aligned(size_t size)
 static void *mapmem(const char *msg, size_t size, int fd, off_t off)
 {
     void *map = mmap(NULL, size, (PROT_READ | PROT_WRITE), MAP_SHARED, fd, off);
-    if(MAP_FAILED == map){
-	fprintf(stderr, "bcm2835_init: %s mmap failed: %s\n", msg, strerror(errno)) ;
-    }
+    if (MAP_FAILED == map)
+	fprintf(stderr, "bcm2835_init: %s mmap failed: %s\n", msg, strerror(errno));
     return map;
 }
 
 static void unmapmem(void **pmem, size_t size)
 {
-    if(*pmem == MAP_FAILED) return;
+    if (*pmem == MAP_FAILED) return;
     munmap(*pmem, size);
     *pmem = MAP_FAILED;
 }
@@ -585,7 +603,8 @@ static void unmapmem(void **pmem, size_t size)
 // Initialise this library.
 int bcm2835_init(void)
 {
-    if (debug) {
+    if (debug) 
+    {
 	bcm2835_pads = (uint32_t*)BCM2835_GPIO_PADS;
 	bcm2835_clk = (uint32_t*)BCM2835_CLOCK_BASE;
 	bcm2835_gpio = (uint32_t*)BCM2835_GPIO_BASE;
@@ -595,7 +614,8 @@ int bcm2835_init(void)
     }
     int ok = 0;
     // Open the master /dev/memory device
-    if ((memfd = open("/dev/mem", O_RDWR | O_SYNC) ) < 0) {
+    if ((memfd = open("/dev/mem", O_RDWR | O_SYNC) ) < 0) 
+    {
 	fprintf(stderr, "bcm2835_init: Unable to open /dev/mem: %s\n",
 		strerror(errno)) ;
 	goto exit;
@@ -621,9 +641,9 @@ int bcm2835_init(void)
 
     ok = 1;
   exit:
-    if(!ok){
+    if (!ok)
 	bcm2835_close();
-    }	
+
     return ok;
 }
 

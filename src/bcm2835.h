@@ -2,7 +2,7 @@
 //
 // C and C++ support for Broadcom BCM 2835 as used in Raspberry Pi
 //
-// Author: Mike McCauley (mikem@open.com.au)
+// Author: Mike McCauley (mikem@airspayce.com)
 // Copyright (C) 2011-2012 Mike McCauley
 // $Id: bcm2835.h,v 1.7 2012/12/01 22:56:52 mikem Exp mikem $
 //
@@ -21,7 +21,7 @@
 /// BCM 2835).
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.15.tar.gz
+/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.16.tar.gz
 /// You can find the latest version at http://www.open.com.au/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -170,8 +170,10 @@
 ///               Fixed errors in documentation of SPI divider prefquencies based on 250MHz clock. 
 ///               Reported by Ben Simpson.
 /// \version 1.15 Added bcm2835_close() to end of examples as suggested by Mark Wolfe.
+/// \version 1.16 Added bcm2835_gpio_set_multi, bcm2835_gpio_clr_multi and bcm2835_gpio_write_multi
+///               to allow a mask of pins to be set all at once. Requested by Sebastian Loncar.
 ///
-/// \author  Mike McCauley (mikem@open.com.au)
+/// \author  Mike McCauley (mikem@airspayce.com)
 
 
 
@@ -613,6 +615,18 @@ extern "C" {
     /// \sa bcm2835_gpio_write()
     extern void bcm2835_gpio_clr(uint8_t pin);
 
+    /// Sets any of the first 32 GPIO output pins specified in the mask to 
+    /// HIGH.
+    /// \param[in] mask Mask of pins to affect. Use eg: (1 << RPI_GPIO_P1_03) | (1 << RPI_GPIO_P1_05)
+    /// \sa bcm2835_gpio_write_multi()
+    extern void bcm2835_gpio_set_multi(uint32_t mask);
+
+    /// Sets any of the first 32 GPIO output pins specified in the mask to 
+    /// LOW.
+    /// \param[in] mask Mask of pins to affect. Use eg: (1 << RPI_GPIO_P1_03) | (1 << RPI_GPIO_P1_05)
+    /// \sa bcm2835_gpio_write_multi()
+    extern void bcm2835_gpio_clr_multi(uint32_t mask);
+
     /// Reads the current level on the specified 
     /// pin and returns either HIGH or LOW. Works whether or not the pin
     /// is an input or an output.
@@ -748,6 +762,11 @@ extern "C" {
     /// \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
     /// \param[in] on HIGH sets the output to HIGH and LOW to LOW.
     extern void bcm2835_gpio_write(uint8_t pin, uint8_t on);
+
+    /// Sets any of the first 32 GPIO output pins specified in the mask to the state given by on
+    /// \param[in] mask Mask of pins to affect. Use eg: (1 << RPI_GPIO_P1_03) | (1 << RPI_GPIO_P1_05)
+    /// \param[in] on HIGH sets the output to HIGH and LOW to LOW.
+    extern void bcm2835_gpio_write_multi(uint32_t mask, uint8_t on);
 
     /// Sets the Pull-up/down mode for the specified pin. This is more convenient than
     /// clocking the mode in with bcm2835_gpio_pud() and bcm2835_gpio_pudclk().
