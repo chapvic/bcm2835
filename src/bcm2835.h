@@ -22,7 +22,7 @@
 /// BCM 2835).
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.30.tar.gz
+/// from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.31.tar.gz
 /// You can find the latest version at http://www.airspayce.com/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -194,6 +194,13 @@
 ///  mlockall(MCL_CURRENT | MCL_FUTURE);
 /// \endcode
 ///
+/// \par Bindings to other languages
+///
+/// mikem has made Perl bindings available at CPAN:
+///  http://search.cpan.org/~mikem/Device-BCM2835-1.9/lib/Device/BCM2835.pm
+/// Matthew Baker has kindly made Python bindings available at:
+///  https://github.com/mubeta06/py-libbcm2835
+///
 /// \par Open Source Licensing GPL V2
 ///
 /// This is the appropriate option if you want to share the source code of your
@@ -283,6 +290,8 @@
 /// \version 1.29 Further fix to SPI from Peter Würtz.
 /// \version 1.30 10 microsecond delays from bcm2835_spi_transfer and bcm2835_spi_transfern for
 ///               significant performance improvements, Patch by Alan Watson.
+/// \version 1.31 Fix a GCC warning about dummy variable, patched by Alan Watson. Thanks.
+///
 /// \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 
 
