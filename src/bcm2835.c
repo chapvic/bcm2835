@@ -5,7 +5,7 @@
 //
 // Author: Mike McCauley
 // Copyright (C) 2011-2013 Mike McCauley
-// $Id: bcm2835.c,v 1.10 2013/03/18 05:57:36 mikem Exp mikem $
+// $Id: bcm2835.c,v 1.12 2013/09/01 00:56:56 mikem Exp mikem $
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -87,11 +87,11 @@ uint32_t bcm2835_peri_read_nb(volatile uint32_t* paddr)
 // safe write to peripheral
 void bcm2835_peri_write(volatile uint32_t* paddr, uint32_t value)
 {
-    if (debug)
+  if (debug)
     {
 	printf("bcm2835_peri_write paddr %08X, value %08X\n", (unsigned) paddr, value);
     }
-    else
+  else
     {
 	// Make sure we don't rely on the first write, which may get
 	// lost if the previous access was to a different peripheral.
@@ -336,7 +336,7 @@ uint32_t bcm2835_gpio_pad(uint8_t group)
 void bcm2835_gpio_set_pad(uint8_t group, uint32_t control)
 {
     volatile uint32_t* paddr = bcm2835_pads + BCM2835_PADS_GPIO_0_27/4 + group*2;
-    bcm2835_peri_write(paddr, control);
+    bcm2835_peri_write(paddr, control | BCM2835_PAD_PASSWRD);
 }
 
 // Some convenient arduino-like functions
@@ -896,6 +896,72 @@ void bcm2835_st_delay(uint64_t offset_micros, uint64_t micros)
 	;
 }
 
+// PWM
+
+void bcm2835_pwm_set_clock(uint32_t divisor)
+{
+  // From Gerts code
+  divisor &= 0xfff;
+  // Stop PWM clock
+  bcm2835_peri_write(bcm2835_clk + BCM2835_PWMCLK_CNTL, BCM2835_PWM_PASSWRD | 0x01);
+  bcm2835_delay(110); // Prevents clock going slow
+  // Wait for the clock to be not busy
+  while ((bcm2835_peri_read(bcm2835_clk + BCM2835_PWMCLK_CNTL) & 0x80) != 0)
+    bcm2835_delay(1); 
+  // set the clock divider and enable PWM clock
+  bcm2835_peri_write(bcm2835_clk + BCM2835_PWMCLK_DIV, BCM2835_PWM_PASSWRD | (divisor << 12));
+  bcm2835_peri_write(bcm2835_clk + BCM2835_PWMCLK_CNTL, BCM2835_PWM_PASSWRD | 0x11); // Source=osc and enable
+}
+
+void bcm2835_pwm_set_mode(uint8_t channel, uint8_t markspace, uint8_t enabled)
+{
+  uint32_t control = bcm2835_peri_read(bcm2835_pwm + BCM2835_PWM_CONTROL);
+
+  if (channel == 0)
+    {
+      if (markspace)
+	control |= BCM2835_PWM0_MS_MODE;
+      else
+	control &= ~BCM2835_PWM0_MS_MODE;
+      if (enabled)
+	control |= BCM2835_PWM0_ENABLE;
+      else
+	control &= ~BCM2835_PWM0_ENABLE;
+    }
+  else if (channel == 1)
+    {
+      if (markspace)
+	control |= BCM2835_PWM1_MS_MODE;
+      else
+	control &= ~BCM2835_PWM1_MS_MODE;
+      if (enabled)
+	control |= BCM2835_PWM1_ENABLE;
+      else
+	control &= ~BCM2835_PWM1_ENABLE;
+    }
+
+  // If you use the barrier here, wierd things happen, and the commands dont work
+  bcm2835_peri_write_nb(bcm2835_pwm + BCM2835_PWM_CONTROL, control);
+  //  bcm2835_peri_write_nb(bcm2835_pwm + BCM2835_PWM_CONTROL, BCM2835_PWM0_ENABLE | BCM2835_PWM1_ENABLE | BCM2835_PWM0_MS_MODE | BCM2835_PWM1_MS_MODE);
+
+}
+
+void bcm2835_pwm_set_range(uint8_t channel, uint32_t range)
+{
+  if (channel == 0)
+      bcm2835_peri_write_nb(bcm2835_pwm + BCM2835_PWM0_RANGE, range);
+  else if (channel == 1)
+      bcm2835_peri_write_nb(bcm2835_pwm + BCM2835_PWM1_RANGE, range);
+}
+
+void bcm2835_pwm_set_data(uint8_t channel, uint32_t data)
+{
+  if (channel == 0)
+      bcm2835_peri_write_nb(bcm2835_pwm + BCM2835_PWM0_DATA, data);
+  else if (channel == 1)
+      bcm2835_peri_write_nb(bcm2835_pwm + BCM2835_PWM1_DATA, data);
+}
+
 // Allocate page-aligned memory.
 void *malloc_aligned(size_t size)
 {
@@ -928,9 +994,9 @@ int bcm2835_init(void)
     if (debug) 
     {
 	bcm2835_pads = (uint32_t*)BCM2835_GPIO_PADS;
-	bcm2835_clk = (uint32_t*)BCM2835_CLOCK_BASE;
+	bcm2835_clk  = (uint32_t*)BCM2835_CLOCK_BASE;
 	bcm2835_gpio = (uint32_t*)BCM2835_GPIO_BASE;
-	bcm2835_pwm = (uint32_t*)BCM2835_GPIO_PWM;
+	bcm2835_pwm  = (uint32_t*)BCM2835_GPIO_PWM;
 	bcm2835_spi0 = (uint32_t*)BCM2835_SPI0_BASE;
 	bcm2835_bsc0 = (uint32_t*)BCM2835_BSC0_BASE;
 	bcm2835_bsc1 = (uint32_t*)BCM2835_BSC1_BASE;
