@@ -23,7 +23,7 @@
   BCM 2835).
   
   The version of the package that this documentation refers to can be downloaded 
-  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.57.tar.gz
+  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.58.tar.gz
   You can find the latest version at http://www.airspayce.com/mikem/bcm2835
   
   Several example programs are provided.
@@ -517,6 +517,10 @@
   \version 1.57 2018-08-28
   Added SPI function bcm2835_spi_set_speed_hz(uint32_t speed_hz);
   Contributed by Arjan van Vught (http://www.raspberrypi-dmx.org/)
+
+  \version 1.58 2018-11-29
+  Added examples/spiram, which shows how to use the included little library (spiram.c and spiram.h)
+  to read and write SPI RAM chips such as 23K256-I/P
   
   \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 */
@@ -528,7 +532,7 @@
 
 #include <stdint.h>
 
-#define BCM2835_VERSION 10057 /* Version 1.57 */
+#define BCM2835_VERSION 10058 /* Version 1.58 */
 
 /* RPi 2 is ARM v7, and has DMB instruction for memory barriers.
    Older RPis are ARM v6 and don't, so a coprocessor instruction must be used instead.
@@ -1905,4 +1909,9 @@ Broadcom bcm2835. Contributed by Shahrooz Shahparnia.
 /*! example gpio.c
   Command line utility for executing gpio commands with the 
   Broadcom bcm2835. Contributed by Shahrooz Shahparnia.
+*/
+
+/*! example spimem_test.c
+  Shows how to use the included little library (spiram.c and spiram.h)
+  to read and write SPI RAM chips such as 23K256-I/P
 */
