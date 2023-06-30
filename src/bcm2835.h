@@ -4,7 +4,7 @@
 //
 // Author: Mike McCauley
 // Copyright (C) 2011-2013 Mike McCauley
-// $Id: bcm2835.h,v 1.12 2013/10/30 03:09:31 mikem Exp mikem $
+// $Id: bcm2835.h,v 1.13 2013/12/06 22:24:52 mikem Exp mikem $
 //
 /// \mainpage C library for Broadcom BCM 2835 as used in Raspberry Pi
 ///
@@ -22,7 +22,7 @@
 /// BCM 2835).
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.33.tar.gz
+/// from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.34.tar.gz
 /// You can find the latest version at http://www.airspayce.com/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -299,6 +299,8 @@
 ///               By default I2C code is generated for the V2 RPi which has SDA1 and SCL1 connected.
 ///               Contributed by Malcolm Wiles based on work by Arvi Govindaraj.
 /// \version 1.33 Added command line utilities i2c and gpio to examples. Contributed by Shahrooz Shahparnia.
+/// \version 1.34 Added bcm2835_i2c_write_read_rs() which writes an arbitrary number of bytes, 
+///               sends a repeat start, and reads from the device. Contributed by Eduardo Steinhorst.
 ///
 /// \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 
@@ -1192,6 +1194,17 @@ extern "C" {
     /// \param[in] len Number of bytes in the buf buffer, and the number of bytes to received.
 	/// \return reason see \ref bcm2835I2CReasonCodes
     extern uint8_t bcm2835_i2c_read_register_rs(char* regaddr, char* buf, uint32_t len);
+
+    /// Allows sending an arbitrary number of bytes to I2C slaves before issuing a repeated
+    /// start (with no prior stop) and reading a response.
+    /// Necessary for devices that require such behavior, such as the MLX90620.
+    /// Will write to and read from the slave previously set by \sa bcm2835_i2c_setSlaveAddress
+    /// \param[in] cmds Buffer containing the bytes to send before the repeated start condition.
+    /// \param[in] cmds_len Number of bytes to send from cmds buffer
+    /// \param[in] buf Buffer of bytes to receive.
+    /// \param[in] buf_len Number of bytes to receive in the buf buffer.
+	/// \return reason see \ref bcm2835I2CReasonCodes
+    extern uint8_t bcm2835_i2c_write_read_rs(char* cmds, uint32_t cmds_len, char* buf, uint32_t buf_len);
 
     /// @}
 
