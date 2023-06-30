@@ -23,7 +23,7 @@
   BCM 2835).
   
   The version of the package that this documentation refers to can be downloaded 
-  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.42.tar.gz
+  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.45.tar.gz
   You can find the latest version at http://www.airspayce.com/mikem/bcm2835
   
   Several example programs are provided.
@@ -407,6 +407,9 @@
 
   \version 1.44 Added documention about the need for device tree to be enabled on RPI2.<br>
   Improvements to detection of availablity of DMB instruction based on value of __ARM_ARCH macro.<br>
+
+  \version 1.45 Fixed an error in the pad group offsets that would prevent bcm2835_gpio_set_pad() 
+  and bcm2835_gpio_pad() working correctly with non-0 pad groups. Reported by Guido.
 
   \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 */
