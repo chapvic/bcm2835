@@ -576,6 +576,10 @@ void bcm2835_spi_writenb(char* tbuf, uint32_t len)
 
 		// Write to FIFO, no barrier
 		bcm2835_peri_write_nb(fifo, tbuf[i]);
+
+		// Read from FIFO to prevent stalling
+		while (bcm2835_peri_read(paddr) & BCM2835_SPI0_CS_RXD)
+			(void) bcm2835_peri_read_nb(fifo);
 	}
 
     // Wait for DONE to be set
