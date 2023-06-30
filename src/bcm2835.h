@@ -22,7 +22,7 @@
 /// BCM 2835).
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.32.tar.gz
+/// from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.33.tar.gz
 /// You can find the latest version at http://www.airspayce.com/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -297,7 +297,8 @@
 /// \version 1.31 Fix a GCC warning about dummy variable, patched by Alan Watson. Thanks.
 /// \version 1.32 Added option I2C_V1 definition to compile for version 1 RPi. 
 ///               By default I2C code is generated for the V2 RPi which has SDA1 and SCL1 connected.
-///               Contributed by Malcolm Wiles.
+///               Contributed by Malcolm Wiles based on work by Arvi Govindaraj.
+/// \version 1.33 Added command line utilities i2c and gpio to examples. Contributed by Shahrooz Shahparnia.
 ///
 /// \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 
@@ -1266,3 +1267,11 @@ extern "C" {
 
 /// @example pwm.c
 /// Shows how to use PWM to control GPIO pins
+
+/// @example i2c.c
+/// Command line utility for executing i2c commands with the 
+/// Broadcom bcm2835. Contributed by Shahrooz Shahparnia.
+
+/// example gpio.c
+/// Command line utility for executing gpio commands with the 
+///   Broadcom bcm2835. Contributed by Shahrooz Shahparnia.

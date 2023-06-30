@@ -220,7 +220,9 @@ examples/input/input.c \
 examples/event/event.c \
 examples/spi/spi.c \
 examples/spin/spin.c \
-examples/pwm/pwm.c 
+examples/pwm/pwm.c \
+examples/i2c/i2c.c \
+examples/gpio/gpio.c 
 
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
