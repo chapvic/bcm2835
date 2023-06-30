@@ -26,7 +26,7 @@
   BCM 2835).
   
   The version of the package that this documentation refers to can be downloaded 
-  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.63.tar.gz
+  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.64.tar.gz
   You can find the latest version at http://www.airspayce.com/mikem/bcm2835
   
   Several example programs are provided.
@@ -555,6 +555,10 @@
   Added bcm2835_aux_spi_transfer, contributed by Michivi
   Adopted GPL V3 licensing
 
+  \version 1.64 2020-04-11
+  Fixed error in definitions of BCM2835_AUX_SPI_STAT_TX_LVL and BCM2835_AUX_SPI_STAT_RX_LVL. Patch from 
+  Eric Marzec. Thanks.
+
   \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 */
 
@@ -565,7 +569,7 @@
 
 #include <stdint.h>
 
-#define BCM2835_VERSION 10063 /* Version 1.63 */
+#define BCM2835_VERSION 10064 /* Version 1.64 */
 
 /* RPi 2 is ARM v7, and has DMB instruction for memory barriers.
    Older RPis are ARM v6 and don't, so a coprocessor instruction must be used instead.
@@ -969,8 +973,8 @@ typedef enum
 #define BCM2835_AUX_SPI_CNTL1_MSBF_IN	0x00000002  /*!< */
 #define BCM2835_AUX_SPI_CNTL1_KEEP_IN	0x00000001  /*!< */
 
-#define BCM2835_AUX_SPI_STAT_TX_LVL	0xFF000000  /*!< */
-#define BCM2835_AUX_SPI_STAT_RX_LVL	0x00FF0000  /*!< */
+#define BCM2835_AUX_SPI_STAT_TX_LVL	0xF0000000  /*!< */
+#define BCM2835_AUX_SPI_STAT_RX_LVL	0x00F00000  /*!< */
 #define BCM2835_AUX_SPI_STAT_TX_FULL	0x00000400  /*!< */
 #define BCM2835_AUX_SPI_STAT_TX_EMPTY	0x00000200  /*!< */
 #define BCM2835_AUX_SPI_STAT_RX_FULL	0x00000100  /*!< */
