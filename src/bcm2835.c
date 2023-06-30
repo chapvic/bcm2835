@@ -568,23 +568,25 @@ void bcm2835_spi_writenb(char* tbuf, uint32_t len)
     bcm2835_peri_set_bits(paddr, BCM2835_SPI0_CS_TA, BCM2835_SPI0_CS_TA);
 
     uint32_t i;
-	for (i = 0; i < len; i++)
-	{
-		// Maybe wait for TXD
-		while (!(bcm2835_peri_read(paddr) & BCM2835_SPI0_CS_TXD))
-			;
-
-		// Write to FIFO, no barrier
-		bcm2835_peri_write_nb(fifo, tbuf[i]);
-
-		// Read from FIFO to prevent stalling
-		while (bcm2835_peri_read(paddr) & BCM2835_SPI0_CS_RXD)
-			(void) bcm2835_peri_read_nb(fifo);
-	}
-
+    for (i = 0; i < len; i++)
+    {
+	// Maybe wait for TXD
+	while (!(bcm2835_peri_read(paddr) & BCM2835_SPI0_CS_TXD))
+	    ;
+	
+	// Write to FIFO, no barrier
+	bcm2835_peri_write_nb(fifo, tbuf[i]);
+	
+	// Read from FIFO to prevent stalling
+	while (bcm2835_peri_read(paddr) & BCM2835_SPI0_CS_RXD)
+	    (void) bcm2835_peri_read_nb(fifo);
+    }
+    
     // Wait for DONE to be set
-    while (!(bcm2835_peri_read_nb(paddr) & BCM2835_SPI0_CS_DONE))
-    	;
+    while (!(bcm2835_peri_read_nb(paddr) & BCM2835_SPI0_CS_DONE)) {
+	while (bcm2835_peri_read(paddr) & BCM2835_SPI0_CS_RXD)
+		(void) bcm2835_peri_read_nb(fifo);
+    };
 
     // Set TA = 0, and also set the barrier
     bcm2835_peri_set_bits(paddr, 0, BCM2835_SPI0_CS_TA);

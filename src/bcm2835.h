@@ -22,7 +22,7 @@
 /// BCM 2835).
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.28.tar.gz
+/// from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.29.tar.gz
 /// You can find the latest version at http://www.airspayce.com/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -280,6 +280,7 @@
 ///               Added suport for PWM mode with bcm2835_pwm_* functions.
 /// \version 1.28 Fixed a problem where bcm2835_spi_writenb() would have problems with transfers of more than
 ///               64 bytes dues to read buffer filling. Patched by Peter Würtz.
+/// \version 1.29 Further fix to SPI from Peter Würtz.
 /// \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 
 
