@@ -26,7 +26,7 @@
 /// http://www.open.com.au/mikem/bcm2835
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.8.tar.gz
+/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.11.tar.gz
 /// You can find the latest version at http://www.open.com.au/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -155,6 +155,7 @@
 ///              Macros to map delay()-> bcm2835_delay() and
 ///              Macros to map delayMicroseconds()-> bcm2835_delayMicroseconds(), which
 ///              can be disabled by defining BCM2835_NO_DELAY_COMPATIBILITY
+/// \version 1.11 Fixed incorrect link to download file
 ///              
 ///
 /// \author  Mike McCauley (mikem@open.com.au)
