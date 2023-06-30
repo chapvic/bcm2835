@@ -26,7 +26,7 @@
 /// http://www.open.com.au/mikem/bcm2835
 ///
 /// The version of the package that this documentation refers to can be downloaded 
-/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.11.tar.gz
+/// from http://www.open.com.au/mikem/bcm2835/bcm2835-1.12.tar.gz
 /// You can find the latest version at http://www.open.com.au/mikem/bcm2835
 ///
 /// Several example programs are provided.
@@ -156,7 +156,7 @@
 ///              Macros to map delayMicroseconds()-> bcm2835_delayMicroseconds(), which
 ///              can be disabled by defining BCM2835_NO_DELAY_COMPATIBILITY
 /// \version 1.11 Fixed incorrect link to download file
-///              
+/// \version 1.12 New GPIO pin definitions for RPi version 2 (which has a diffrent GPIO mapping)             
 ///
 /// \author  Mike McCauley (mikem@open.com.au)
 
@@ -288,28 +288,48 @@ typedef enum
 /// These can be passed as a pin number to any function requiring a pin.
 /// Not all pins on the RPi 26 bin IDE plug are connected to GPIO pins
 /// and some can adopt an alternate function.
+/// RPi version 2 has some slightly different pinouts, and these are values RPI_V2_*.
 /// At bootup, pins 8 and 10 are set to UART0_TXD, UART0_RXD (ie the alt0 function) respectively
 /// When SPI0 is in use (ie after bcm2835_spi_begin()), pins 19, 21, 23, 24, 26 are dedicated to SPI
 /// and cant be controlled independently
 typedef enum
 {
-    RPI_GPIO_P1_03        =  0,  ///< Pin P1-03
-    RPI_GPIO_P1_05        =  1,  ///< Pin P1-05
-    RPI_GPIO_P1_07        =  4,  ///< Pin P1-07
-    RPI_GPIO_P1_08        = 14,  ///< Pin P1-08, defaults to alt function 0 UART0_TXD
-    RPI_GPIO_P1_10        = 15,  ///< Pin P1-10, defaults to alt function 0 UART0_RXD
-    RPI_GPIO_P1_11        = 17,  ///< Pin P1-11
-    RPI_GPIO_P1_12        = 18,  ///< Pin P1-12
-    RPI_GPIO_P1_13        = 21,  ///< Pin P1-13
-    RPI_GPIO_P1_15        = 22,  ///< Pin P1-15
-    RPI_GPIO_P1_16        = 23,  ///< Pin P1-16
-    RPI_GPIO_P1_18        = 24,  ///< Pin P1-18
-    RPI_GPIO_P1_19        = 10,  ///< Pin P1-19, MOSI when SPI0 in use
-    RPI_GPIO_P1_21        =  9,  ///< Pin P1-21, MISO when SPI0 in use
-    RPI_GPIO_P1_22        = 25,  ///< Pin P1-22
-    RPI_GPIO_P1_23        = 11,  ///< Pin P1-23, CLK when SPI0 in use
-    RPI_GPIO_P1_24        =  8,  ///< Pin P1-24, CE0 when SPI0 in use
-    RPI_GPIO_P1_26        =  7   ///< Pin P1-26, CE1 when SPI0 in use
+    RPI_GPIO_P1_03        =  0,  ///< Version 1, Pin P1-03
+    RPI_GPIO_P1_05        =  1,  ///< Version 1, Pin P1-05
+    RPI_GPIO_P1_07        =  4,  ///< Version 1, Pin P1-07
+    RPI_GPIO_P1_08        = 14,  ///< Version 1, Pin P1-08, defaults to alt function 0 UART0_TXD
+    RPI_GPIO_P1_10        = 15,  ///< Version 1, Pin P1-10, defaults to alt function 0 UART0_RXD
+    RPI_GPIO_P1_11        = 17,  ///< Version 1, Pin P1-11
+    RPI_GPIO_P1_12        = 18,  ///< Version 1, Pin P1-12
+    RPI_GPIO_P1_13        = 21,  ///< Version 1, Pin P1-13
+    RPI_GPIO_P1_15        = 22,  ///< Version 1, Pin P1-15
+    RPI_GPIO_P1_16        = 23,  ///< Version 1, Pin P1-16
+    RPI_GPIO_P1_18        = 24,  ///< Version 1, Pin P1-18
+    RPI_GPIO_P1_19        = 10,  ///< Version 1, Pin P1-19, MOSI when SPI0 in use
+    RPI_GPIO_P1_21        =  9,  ///< Version 1, Pin P1-21, MISO when SPI0 in use
+    RPI_GPIO_P1_22        = 25,  ///< Version 1, Pin P1-22
+    RPI_GPIO_P1_23        = 11,  ///< Version 1, Pin P1-23, CLK when SPI0 in use
+    RPI_GPIO_P1_24        =  8,  ///< Version 1, Pin P1-24, CE0 when SPI0 in use
+    RPI_GPIO_P1_26        =  7,  ///< Version 1, Pin P1-26, CE1 when SPI0 in use
+
+    // RPi Version 2
+    RPI_V2_GPIO_P1_03     =  2,  ///< Version 2, Pin P1-03
+    RPI_V2_GPIO_P1_05     =  3,  ///< Version 2, Pin P1-05
+    RPI_V2_GPIO_P1_07     =  4,  ///< Version 2, Pin P1-07
+    RPI_V2_GPIO_P1_08     = 14,  ///< Version 2, Pin P1-08, defaults to alt function 0 UART0_TXD
+    RPI_V2_GPIO_P1_10     = 15,  ///< Version 2, Pin P1-10, defaults to alt function 0 UART0_RXD
+    RPI_V2_GPIO_P1_11     = 17,  ///< Version 2, Pin P1-11
+    RPI_V2_GPIO_P1_12     = 18,  ///< Version 2, Pin P1-12
+    RPI_V2_GPIO_P1_13     = 27,  ///< Version 2, Pin P1-13
+    RPI_V2_GPIO_P1_15     = 22,  ///< Version 2, Pin P1-15
+    RPI_V2_GPIO_P1_16     = 23,  ///< Version 2, Pin P1-16
+    RPI_V2_GPIO_P1_18     = 24,  ///< Version 2, Pin P1-18
+    RPI_V2_GPIO_P1_19     = 10,  ///< Version 2, Pin P1-19, MOSI when SPI0 in use
+    RPI_V2_GPIO_P1_21     =  9,  ///< Version 2, Pin P1-21, MISO when SPI0 in use
+    RPI_V2_GPIO_P1_22     = 25,  ///< Version 2, Pin P1-22
+    RPI_V2_GPIO_P1_23     = 11,  ///< Version 2, Pin P1-23, CLK when SPI0 in use
+    RPI_V2_GPIO_P1_24     =  8,  ///< Version 2, Pin P1-24, CE0 when SPI0 in use
+    RPI_V2_GPIO_P1_26     =  7   ///< Version 2, Pin P1-26, CE1 when SPI0 in use
 } RPiGPIOPin;
 
 /// Defines for SPI
@@ -750,7 +770,7 @@ extern "C" {
     /// during the transfer.
     /// Clocks the 8 bit value out on MOSI, and simultaneously clocks in data from MISO. 
     /// Returns the read data byte from the slave.
-    /// Uses polled transfer as per section 10.6.1 of teh BCM 2835 ARM Peripherls manual
+    /// Uses polled transfer as per section 10.6.1 of the BCM 2835 ARM Peripherls manual
     /// \param[in] value The 8 bit data byte to write to MOSI
     /// \return The 8 bit byte simultaneously read from  MISO
     /// \sa bcm2835_spi_transfern()
