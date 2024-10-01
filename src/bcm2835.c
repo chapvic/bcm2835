@@ -1109,7 +1109,8 @@ void bcm2835_aux_spi_transfernb(const char *tbuf, char *rbuf, uint32_t len) {
 
 	while ((tx_len > 0) || (rx_len > 0)) {
 
-		while (!(bcm2835_peri_read(stat) & BCM2835_AUX_SPI_STAT_TX_FULL) && (tx_len > 0)) {
+	    while (!(bcm2835_peri_read(stat) & BCM2835_AUX_SPI_STAT_TX_FULL) && (tx_len > 0) && (tx_len + BCM2835_AUX_SPI_FIFO_SIZE * 3 > rx_len))
+	    {
 			count = MIN(tx_len, 3);
 			data = 0;
 
@@ -1129,7 +1130,8 @@ void bcm2835_aux_spi_transfernb(const char *tbuf, char *rbuf, uint32_t len) {
 
 		}
 
-		while (!(bcm2835_peri_read(stat) & BCM2835_AUX_SPI_STAT_RX_EMPTY) && (rx_len > 0)) {
+		while (!(bcm2835_peri_read(stat) & BCM2835_AUX_SPI_STAT_RX_EMPTY) && (rx_len > 0))
+		{
 			count = MIN(rx_len, 3);
 			data = bcm2835_peri_read(io);
 
@@ -1151,7 +1153,8 @@ void bcm2835_aux_spi_transfernb(const char *tbuf, char *rbuf, uint32_t len) {
 			rx_len -= count;
 		}
 
-		while (!(bcm2835_peri_read(stat) & BCM2835_AUX_SPI_STAT_BUSY) && (rx_len > 0)) {
+		while (!(bcm2835_peri_read(stat) & BCM2835_AUX_SPI_STAT_BUSY) && (rx_len > 0) && (tx_len == 0))
+		{
 			count = MIN(rx_len, 3);
 			data = bcm2835_peri_read(io);
 
