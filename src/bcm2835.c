@@ -1315,7 +1315,7 @@ uint8_t bcm2835_i2c_write(const char * buf, uint32_t len)
     uint32_t      remaining = len;
     uint32_t      i = 0;
     uint8_t       reason = BCM2835_I2C_REASON_OK;
-    unsigned long Failsafe = len * 1000;
+    unsigned long Failsafe = len * 10000;
     int           Timeout = 0;
     
     /* Clear FIFO */

@@ -27,7 +27,7 @@
   BCM 2835).
   
   The version of the package that this documentation refers to can be downloaded 
-  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.73.tar.gz
+  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.74.tar.gz
   You can find the latest version at http://www.airspayce.com/mikem/bcm2835
   
   Several example programs are provided.
@@ -628,6 +628,9 @@
   Added Timeout checks to bcm2835_i2c_write() in case of IO problems. New reason cade BCM2835_I2C_REASON_ERROR_TIMEOUT
   added. Patch courtesy Simon Peacock.
 
+  \version 1.74
+  Timeout in bcm2835_i2c_write() increased by a factor of 10 because some users have reported spurious timeouts at slow speeds.
+
   \author  Mike McCauley DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 */
 
@@ -643,7 +646,7 @@
 /* Needed to compile with gcc -std=c99, as reported by John Blaiklock.*/
 #include <fcntl.h>
 
-#define BCM2835_VERSION 10073 /* Version 1.73 */
+#define BCM2835_VERSION 10074 /* Version 1.74 */
 
 // Define this if you want to use libcap2 to determine if you have the cap_sys_rawio capability
 // and therefore the capability of opening /dev/mem, even if you are not root.
